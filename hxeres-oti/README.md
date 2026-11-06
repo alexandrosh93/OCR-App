@@ -25,7 +25,7 @@
 3. Τρέξε:
 
 ```
-pip install edge-tts numpy pillow opencv-python-headless
+pip install edge-tts numpy pillow opencv-python-headless praat-parselmouth
 python3 make_video.py configs/<όνομα>.json ../videos/<όνομα>.mp4
 python3 make_video.py configs/<όνομα>.json --preview 3,6,9,12 preview.png   # γρήγορος έλεγχος καρέ
 ```
@@ -67,3 +67,10 @@ emoji & stickers που σκάνε, τρανταγμοί και ηχητικά �
 ```
 python3 make_tiktok.py configs/anorthosis_edit.json ../videos/anorthosis_edit.mp4
 ```
+
+### Ερωτήσεις με σωστό τόνο
+
+Η φωνή διαβάζει το ελληνικό «;» σαν κατάφαση. Κάθε γραμμή που τελειώνει σε «;» στέλνεται στη φωνή με «?» και
+ο τόνος της τελευταίας λέξης ανεβαίνει αυτόματα (Praat PSOLA, κρατάει τη χροιά και τον συγχρονισμό),
+ενώ η λεζάντα δείχνει το «;». Καλύτερα να τελειώνει η ερώτηση σε λέξη όπως «πρωταθλήματα» (όχι σε «σειρά»).
+Ρυθμίσεις: `"question": false` σε μια γραμμή για να μην εφαρμοστεί, `"question_semitones"` για το πόσο ανεβαίνει.

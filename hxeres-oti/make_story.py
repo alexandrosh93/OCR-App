@@ -96,6 +96,59 @@ def tts_words(text, voice, rate, pitch='+0Hz', fx=True):
     return x / max(np.abs(x).max(), 1e-3) * 0.89, json.load(open(js, encoding='utf-8'))
 
 
+def question_rise(audio, words, semitones=7.0, start=0.55, dip=-1.0):
+    """Give a line a clear question ending. The TTS barely rises at '?', so the end of the last word is
+    re-pitched (Praat PSOLA, keeps timbre and timing): slight dip, then a smooth rise to `semitones` above
+    the line's median pitch on the final syllable(s). Works best when the last word ends voiced, e.g.
+    '...πρωταθλήματα?'; Greek ';' reads as a statement, so questions are sent to the TTS with '?'."""
+    try:
+        import parselmouth
+        from parselmouth.praat import call
+    except ImportError:
+        print('question_rise: pip install praat-parselmouth to enable it', file=sys.stderr)
+        return audio
+    if not words:
+        return audio
+    snd = parselmouth.Sound(audio.astype(np.float64), sampling_frequency=SR)
+    man = call(snd, 'To Manipulation', 0.01, 60, 400)
+    pt = call(man, 'Extract pitch tier')
+    n = call(pt, 'Get number of points')
+    pts = [(call(pt, 'Get time from index', i), call(pt, 'Get value at index', i)) for i in range(1, n + 1)]
+    w0, w1 = words[-1][1], words[-1][2]
+    d0 = w0 + 0.25 * (w1 - w0)
+    r0 = w0 + start * (w1 - w0)
+    tail = [t for t, f in pts if r0 <= t <= w1 + 0.2]
+    if not tail:
+        print('question_rise: last word has no voiced end, skipped', file=sys.stderr)
+        return audio
+    r1 = max(tail)
+    med = float(np.median([f for t, f in pts if t < w0] or [f for t, f in pts]))
+    before = [f for t, f in pts if d0 <= t < r0]
+    f_start = min(before[-1] if before else med, med) * 2 ** (dip / 12)
+    f_end = med * 2 ** (semitones / 12)
+
+    def target(t, f):
+        if t < d0:
+            return f
+        if t < r0:
+            return f * 2 ** (dip * ease((t - d0) / max(r0 - d0, 1e-3)) / 12)
+        k = ease_out(min(1, (t - r0) / max(r1 - r0, 1e-3)), 1.6)
+        return f_start * (f_end / f_start) ** k
+
+    call(pt, 'Remove points between', d0 - 1e-3, len(audio) / SR + 1)
+    for t, f in pts:
+        if t >= d0 - 1e-3:
+            call(pt, 'Add point', t, target(t, f))
+    call([pt, man], 'Replace pitch tier')
+    y = call(man, 'Get resynthesis (overlap-add)').values[0].astype(np.float32)
+    y = y[:len(audio)] if len(y) >= len(audio) else np.pad(y, (0, len(audio) - len(y)))
+    return y / max(np.abs(y).max(), 1e-3) * np.abs(audio).max()
+
+
+def is_question(text):
+    return text.rstrip().endswith((';', '?', '\u037e'))
+
+
 def tighten(audio, words, max_pause=0.22, keep_after=0.14):
     """Shorten long pauses between words (TTS stops ~1s at every '!') so the read stays punchy."""
     cuts = []
@@ -267,7 +320,14 @@ class Story:
         lines = [l if isinstance(l, dict) else {'text': l} for l in lines]      # a line may override rate / pitch
         self.line_text = [l['text'] for l in lines]
         mp = cfg.get('max_pause', 0.22)               # null = keep the voice's natural pauses
-        raw = [tts_words(l['text'], l.get('voice', voice), l.get('rate', rate), l.get('pitch', pitch), fx) for l in lines]
+        def tts_text(l):                              # the TTS only rises on '?', not on the Greek ';'
+            t = l['text']
+            return t.rstrip()[:-1] + '?' if l.get('question', is_question(t)) and t.rstrip()[-1:] in ';\u037e' else t
+        raw = [tts_words(tts_text(l), l.get('voice', voice), l.get('rate', rate), l.get('pitch', pitch), fx) for l in lines]
+        # questions get a real rising end (TTS reads them almost flat); "question": false turns it off
+        qs = cfg.get('question_semitones', 6.0)
+        raw = [(question_rise(a, w, l.get('question_semitones', qs)), w)
+               if l.get('question', is_question(l['text'])) else (a, w) for (a, w), l in zip(raw, lines)]
         self.vo = [tighten(*v, max_pause=mp) if mp else v for v in raw]
         self.intro = Intro()
         self.team = cfg['team']
@@ -474,6 +534,8 @@ class Story:
                 toks.append(dict(text=caps(w), t0=base + a, t1=base + b, norms=[norm(w)], brk=brk[i],
                                  fw=norm(w) in self.FUNCTION_WORDS))
                 i += 1
+        if toks and is_question(src):                     # show the question mark on screen too
+            toks[-1]['text'] += ';'
         return toks
 
     @classmethod
