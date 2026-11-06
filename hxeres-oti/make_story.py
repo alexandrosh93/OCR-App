@@ -949,6 +949,72 @@ class Story:
                     place(fr, pill, XC, Ys + 125, 0.6 + 0.4 * q, min(1, v / 0.15))
         return draw
 
+    # ---------------------------------------------------------------- scene: streak
+    def build_streak(self, sc, line, T):
+        """Season chips (🏆 1973–74 …) pop one after another on the voice while a big counter climbs 1→N."""
+        seasons = sc['seasons']
+        n = len(seasons)
+        t0, t1 = self.at(line, sc['start_at']), self.at(line, sc['end_at'])
+        times = [t0 + (t1 - t0) * i / max(n - 1, 1) for i in range(n)]
+        dw, dh = 168, 226
+        strip = odometer_strip(fnt('FiraSansExtraCondensed-Black', 196), dw, dh, LIME)
+        tbg, tov = tile_parts(dw, dh)
+        tglow, _ = glow_of(tbg, 22, LIME)
+        pill = self.pill_img(sc.get('label', 'ΣΥΝΕΧΟΜΕΝΑ ΠΡΩΤΑΘΛΗΜΑΤΑ'), 40)
+        cw, ch, gx, gy = 384, 108, 22, 18
+        trophy = emoji_img('🏆', 70)
+        f = fnt('FiraSansExtraCondensed-Black', 70)
+        chips = []
+        for i, lab in enumerate(seasons):
+            chip = Image.new('RGBA', (cw + 40, ch + 40), (0, 0, 0, 0))
+            d = ImageDraw.Draw(chip)
+            d.rounded_rectangle((20, 20, 20 + cw, 20 + ch), 26, fill=(8, 20, 36, 244), outline=LIME + (255,), width=4)
+            chip.alpha_composite(trophy, (20 + 22, int(20 + ch / 2 - trophy.height / 2)))
+            txt = plain_text(lab, f, stroke=3)
+            chip.alpha_composite(txt, (int(20 + 22 + trophy.width + 18), int(20 + ch / 2 - txt.height / 2)))
+            r, c = divmod(i, 2)
+            chips.append(dict(img=chip, glow=glow_of(chip, 14, LIME)[0], t=times[i],
+                              x=XC + (c - 0.5) * (cw + gx), y=815 + r * (ch + gy)))
+            self.events += [(times[i], 'pop'), (times[i] + 0.02, 'tick')]
+        self.events += [(T + 0.15, 'pop'), (times[-1], 'thud')]
+        self.shakes.append((times[-1], 12))
+        stk = None
+        if sc.get('stamp'):
+            st = sc['stamp']
+            simg = fit_text(st['text'], st.get('color', 'yellow'), st.get('max_w', 460), st.get('max_size', 104))
+            stk = dict(im=simg, glow=glow_of(simg, 18, LIME)[0], t=self.at(line, st['at']),
+                       x=st.get('x', XC + 225), y=st.get('y', 445), rot=st.get('rotate', 10))
+            self.events.append((stk['t'], 'thud'))
+            self.shakes.append((stk['t'], 14))
+        Yt, Yp = 525, 700
+
+        def draw(fr, t):
+            u = t - (T + 0.15)
+            if u > 0:
+                k = sum(1 for tt in times if t >= tt)
+                v = float(k) if k == 0 else (k - 1) + ease_out(min(1, (t - times[k - 1]) / 0.2), 3)
+                tile = digit_tile(strip, tbg, tov, v)
+                sc_ = 0.3 + 0.7 * ease_out_back(u / 0.45, 1.8)
+                if k and t - times[k - 1] < 0.25:          # little bump on every new title
+                    sc_ *= 1 + 0.08 * (1 - (t - times[k - 1]) / 0.25)
+                place(fr, tglow, XC, Yt, sc_, 0.35 + 0.5 * (k / n))
+                place(fr, tile, XC, Yt, sc_, min(1, u / 0.12))
+                place(fr, pill, XC, Yp, 0.6 + 0.4 * ease_out_back((u - 0.2) / 0.35, 2.0), min(1, max(0, u - 0.2) / 0.12))
+            for c in chips:
+                u = t - c['t']
+                if u <= 0:
+                    continue
+                k = 0.3 + 0.7 * ease_out_back(u / 0.32, 2.4)
+                if u < 0.5:
+                    place(fr, c['glow'], c['x'], c['y'], k, 0.9 * (1 - u / 0.5))
+                place(fr, c['img'], c['x'], c['y'], k, min(1, u / 0.08), rot=6 * math.sin(u * 14) * math.exp(-u * 6))
+            if stk is not None and t > stk['t']:
+                u = t - stk['t']
+                k = 1 + 1.3 * (1 - ease_out(u / 0.18, 3))
+                place(fr, stk['glow'], stk['x'], stk['y'], k, 0.8 * min(1, u / 0.1), rot=stk['rot'])
+                place(fr, stk['im'], stk['x'], stk['y'], k, min(1, u / 0.06), rot=stk['rot'])
+        return draw
+
     # ---------------------------------------------------------------- scene: gallery
     def build_gallery(self, sc, line, T):
         """Several real photos pop in one after another as a tilted stack, plus an optional sticker."""

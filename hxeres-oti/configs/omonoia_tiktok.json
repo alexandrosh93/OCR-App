@@ -1,0 +1,181 @@
+{
+  "photo": "posts/omonoia_fans_today.jpg",
+  "team": {
+    "name": "ΟΜΟΝΟΙΑ",
+    "color": [
+      0,
+      140,
+      70
+    ],
+    "crest": "assets/omonoia_crest.png",
+    "mascot": "assets/omonoia_mascot.png"
+  },
+  "voice": "el-GR-NestorasNeural",
+  "rate": "+10%",
+  "pitch": "+0Hz",
+  "voice_fx": false,
+  "max_pause": null,
+  "tail": 0.6,
+  "hook": "Ήξερες ότι η Ομόνοια έχει πάρει έξι πρωταθλήματα στη σειρά;",
+  "lines": [
+    "Από τη σεζόν εβδομήντα τρία, εβδομήντα τέσσερα, μέχρι και το εβδομήντα οκτώ, εβδομήντα εννιά, κανείς δεν μπορούσε να τη σταματήσει!",
+    "Έξι πρωταθλήματα, το ένα μετά το άλλο! Απόλυτη κυριαρχία!",
+    "Και ο Σωτήρης Καϊάφας, πήρε το Χρυσό Παπούτσι της Ευρώπης, με τριάντα εννιά γκολ σε μία σεζόν!",
+    "Ένα ρεκόρ που έμεινε αξεπέραστο για σαράντα ολόκληρα χρόνια!"
+  ],
+  "cta": "Ποια άλλη ιστορική στιγμή θες να δούμε; Γράψ' τη στα σχόλια, και κάνε φόλοου στο Κουπονάκι!",
+  "cta_badge": "ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ",
+  "emoji": {
+    "σειρά": "😳",
+    "σταματήσει": "🔥",
+    "κυριαρχία": "👑",
+    "παπούτσι": "👟",
+    "γκολ": "⚽",
+    "χρόνια": "🤯",
+    "σχόλια": "👇"
+  },
+  "caption_replace": {
+    "εβδομήντα τρία εβδομήντα τέσσερα": "1973-74",
+    "εβδομήντα οκτώ εβδομήντα εννιά": "1978-79",
+    "τριάντα εννιά": "39",
+    "έξι": "6",
+    "σαράντα": "40",
+    "φόλοου": "FOLLOW",
+    "Κουπονάκι": "KOUPONAKI"
+  },
+  "scenes": [
+    {
+      "type": "streak",
+      "backdrop": "posts/omonoia_ajax1979.jpg",
+      "seasons": [
+        "1973–74",
+        "1974–75",
+        "1975–76",
+        "1976–77",
+        "1977–78",
+        "1978–79"
+      ],
+      "start_at": {
+        "word": "εβδομήντα"
+      },
+      "end_at": {
+        "word": "εννιά"
+      },
+      "stamp": {
+        "text": "ΑΣΤΑΜΑΤΗΤΗ!",
+        "at": {
+          "word": "σταματήσει"
+        },
+        "x": 836,
+        "y": 548,
+        "max_w": 370,
+        "max_size": 96,
+        "rotate": 10
+      }
+    },
+    {
+      "type": "fact",
+      "backdrop": "posts/omonoia_fans70s.jpg",
+      "crest_at": 0.0,
+      "words": [
+        {
+          "text": "6",
+          "color": "white",
+          "max_size": 270,
+          "at": {
+            "word": "έξι"
+          }
+        },
+        {
+          "text": "ΠΡΩΤΑΘΛΗΜΑΤΑ",
+          "color": "green",
+          "max_size": 150,
+          "at": {
+            "word": "πρωταθλήματα"
+          }
+        },
+        {
+          "text": "ΣΤΗ ΣΕΙΡΑ!",
+          "color": "yellow",
+          "max_size": 150,
+          "at": {
+            "word": "ένα"
+          }
+        }
+      ],
+      "mascot_at": {
+        "word": "πρωταθλήματα"
+      },
+      "confetti_at": {
+        "word": "άλλο"
+      },
+      "stamp": {
+        "text": "ΚΥΡΙΑΡΧΙΑ!",
+        "at": {
+          "word": "κυριαρχία"
+        }
+      }
+    },
+    {
+      "type": "stats",
+      "backdrop": "posts/omonoia_celebration.jpg",
+      "photo": "posts/omonoia_celebration.jpg",
+      "pill": "ΧΡΥΣΟ ΠΑΠΟΥΤΣΙ 1976",
+      "pill_at": {
+        "word": "χρυσό"
+      },
+      "items": [
+        {
+          "value": 39,
+          "label": "ΓΚΟΛ",
+          "color": "lime",
+          "hero": true,
+          "at": {
+            "word": "τριάντα"
+          }
+        },
+        {
+          "value": 1,
+          "label": "ΣΕΖΟΝ",
+          "color": "yellow",
+          "at": {
+            "word": "μία"
+          }
+        }
+      ]
+    },
+    {
+      "type": "gallery",
+      "backdrop": "posts/omonoia_fans_today.jpg",
+      "photos": [
+        {
+          "photo": "posts/omonoia_ajax1979.jpg",
+          "at": {
+            "word": "ρεκόρ"
+          }
+        },
+        {
+          "photo": "posts/omonoia_fans70s.jpg",
+          "at": {
+            "word": "αξεπέραστο"
+          }
+        },
+        {
+          "photo": "posts/omonoia_fans_today.jpg",
+          "at": {
+            "word": "σαράντα"
+          }
+        }
+      ],
+      "sticker": {
+        "text": "40 ΧΡΟΝΙΑ ΡΕΚΟΡ!",
+        "at": {
+          "word": "χρόνια"
+        },
+        "x": 690,
+        "y": 470,
+        "rotate": 8
+      }
+    }
+  ]
+}
