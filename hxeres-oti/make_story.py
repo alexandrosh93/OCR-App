@@ -96,11 +96,11 @@ def tts_words(text, voice, rate, pitch='+0Hz', fx=True):
     return x / max(np.abs(x).max(), 1e-3) * 0.89, json.load(open(js, encoding='utf-8'))
 
 
-def question_rise(audio, words, semitones=7.0, start=0.55, dip=-1.0):
-    """Give a line a clear question ending. The TTS barely rises at '?', so the end of the last word is
-    re-pitched (Praat PSOLA, keeps timbre and timing): slight dip, then a smooth rise to `semitones` above
-    the line's median pitch on the final syllable(s). Works best when the last word ends voiced, e.g.
-    '...πρωταθλήματα?'; Greek ';' reads as a statement, so questions are sent to the TTS with '?'."""
+def question_rise(audio, words, semitones=7.0, start=0.5, dip=-1.0, stretch=1.25):
+    """Give a line a clear question ending on its last word (e.g. '...στη σειρά;').
+    The TTS reads Greek questions almost flat and lets the last vowel go low and weak, so: a sensitive pitch
+    analysis finds that vowel's pulses, then Praat PSOLA (keeps timbre) adds a slight dip and a smooth rise
+    to `semitones` above the line's median, and draws the final syllable out a little (`stretch`)."""
     try:
         import parselmouth
         from parselmouth.praat import call
@@ -110,14 +110,18 @@ def question_rise(audio, words, semitones=7.0, start=0.55, dip=-1.0):
     if not words:
         return audio
     snd = parselmouth.Sound(audio.astype(np.float64), sampling_frequency=SR)
-    man = call(snd, 'To Manipulation', 0.01, 60, 400)
-    pt = call(man, 'Extract pitch tier')
+    # sensitive analysis: low floor and voicing threshold, so the soft final vowel still gets pulses
+    pitch = call(snd, 'To Pitch (ac)', 0.005, 40, 15, 'no', 0.01, 0.2, 0.01, 0.35, 0.14, 400)
+    pulses = call([snd, pitch], 'To PointProcess (cc)')
+    man = call(snd, 'To Manipulation', 0.01, 40, 400)
+    call([man, pulses], 'Replace pulses')
+    pt = call(pitch, 'Down to PitchTier')
     n = call(pt, 'Get number of points')
     pts = [(call(pt, 'Get time from index', i), call(pt, 'Get value at index', i)) for i in range(1, n + 1)]
     w0, w1 = words[-1][1], words[-1][2]
-    d0 = w0 + 0.25 * (w1 - w0)
+    d0 = w0 + 0.15 * (w1 - w0)
     r0 = w0 + start * (w1 - w0)
-    tail = [t for t, f in pts if r0 <= t <= w1 + 0.2]
+    tail = [t for t, f in pts if r0 <= t <= w1 + 0.25]
     if not tail:
         print('question_rise: last word has no voiced end, skipped', file=sys.stderr)
         return audio
@@ -140,8 +144,14 @@ def question_rise(audio, words, semitones=7.0, start=0.55, dip=-1.0):
         if t >= d0 - 1e-3:
             call(pt, 'Add point', t, target(t, f))
     call([pt, man], 'Replace pitch tier')
+    if stretch and stretch != 1:                          # draw the questioning syllable out a little
+        dt = call(man, 'Extract duration tier')
+        call(dt, 'Add point', r0 - 0.02, 1.0)
+        call(dt, 'Add point', r0, stretch)
+        call(dt, 'Add point', r1 + 0.04, stretch)
+        call(dt, 'Add point', r1 + 0.06, 1.0)
+        call([dt, man], 'Replace duration tier')
     y = call(man, 'Get resynthesis (overlap-add)').values[0].astype(np.float32)
-    y = y[:len(audio)] if len(y) >= len(audio) else np.pad(y, (0, len(audio) - len(y)))
     return y / max(np.abs(y).max(), 1e-3) * np.abs(audio).max()
 
 
@@ -326,8 +336,11 @@ class Story:
         raw = [tts_words(tts_text(l), l.get('voice', voice), l.get('rate', rate), l.get('pitch', pitch), fx) for l in lines]
         # questions get a real rising end (TTS reads them almost flat); "question": false turns it off
         qs = cfg.get('question_semitones', 6.0)
-        raw = [(question_rise(a, w, l.get('question_semitones', qs)), w)
-               if l.get('question', is_question(l['text'])) else (a, w) for (a, w), l in zip(raw, lines)]
+        def ask(a, w, l):
+            y = question_rise(a, w, l.get('question_semitones', qs))
+            extra = (len(y) - len(a)) / SR
+            return y, (w[:-1] + [[w[-1][0], w[-1][1], w[-1][2] + extra]] if w else w)
+        raw = [ask(a, w, l) if l.get('question', is_question(l['text'])) else (a, w) for (a, w), l in zip(raw, lines)]
         self.vo = [tighten(*v, max_pause=mp) if mp else v for v in raw]
         self.intro = Intro()
         self.team = cfg['team']
