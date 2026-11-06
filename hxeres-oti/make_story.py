@@ -868,6 +868,18 @@ class Story:
         card = self.photo_card(800, 600, self.load_photo(sc.get('photo')))
         tP = T + 0.12
         tHo, tAw, tBox = self.at(line, sc['home_at']), self.at(line, sc['away_at']), self.at(line, sc['score_at'])
+        card2 = self.photo_card(330, 220, self.load_photo(sc['photo2'])) if sc.get('photo2') else None   # polaroid
+        tP2 = self.at(line, sc.get('photo2_at', 0.6)) if card2 is not None else None
+        if tP2 is not None:
+            self.events.append((tP2, 'whoosh'))
+        badge = None
+        if sc.get('badge'):                       # sticker on the photo, e.g. «2 ΑΠΟΚΡΟΥΣΕΙΣ!»
+            bd_ = sc['badge']
+            bimg = fit_text(bd_['text'], bd_.get('color', 'yellow'), 420, bd_.get('max_size', 90))
+            badge = dict(im=bimg, glow=glow_of(bimg, 16, LIME)[0], t=self.at(line, bd_['at']),
+                         x=bd_.get('x', XC + 250), y=bd_.get('y', 520), rot=bd_.get('rotate', 10))
+            self.events.append((badge['t'], 'thud'))
+            self.shakes.append((badge['t'], 12))
         if 'steps' in sc:
             steps = [dict(value=s['value'], t=self.at(line, s['at']), label=s.get('label', ''),
                           t_label=self.at(line, s.get('label_at', s['at']))) for s in sc['steps']]
@@ -887,9 +899,11 @@ class Story:
         tbg, tov = tile_parts(dw, dh, border=None, radius=16)
         dash = plain_text('–', fnt('FiraSansExtraCondensed-Black', 80))
         digit_steps = [[(s['t'], s['value'][k]) for s in steps] for k in (0, 1)]
+        # "land_at": keep the digits spinning (slot-machine style) and land on that word
+        spin = max(0.75, self.at(line, sc['land_at']) - steps[0]['t']) if sc.get('land_at') else 0.75
         for k in (0, 1):
             ds = digit_steps[k]
-            self.add_ticks(lambda tt, ds=ds: step_value(tt, ds), ds[0][0], ds[-1][0] + 0.8)
+            self.add_ticks(lambda tt, ds=ds: step_value(tt, ds, spin), ds[0][0], ds[-1][0] + spin + 0.05)
         pills = []
         for s in steps:
             ptxt = plain_text(s['label'], fnt('FiraSansExtraCondensed-Bold', 36), (6, 30, 16))
@@ -905,6 +919,13 @@ class Story:
 
         def draw(fr, t):
             self.draw_card(fr, card, t, tP, XC, Yc)
+            if card2 is not None:
+                self.draw_card(fr, card2, t, tP2, XC + 240, Yc + 170, rot_end=7)
+            if badge is not None and t > badge['t']:
+                u = t - badge['t']
+                k = 1 + 1.2 * (1 - ease_out(u / 0.18, 3))
+                place(fr, badge['glow'], badge['x'], badge['y'], k, 0.8 * min(1, u / 0.1), rot=badge['rot'])
+                place(fr, badge['im'], badge['x'], badge['y'], k, min(1, u / 0.06), rot=badge['rot'])
             u = t - tHo
             if u > 0:
                 place(fr, home, xl - 560 * (1 - ease_out_back(u / 0.5, 1.3)), Ys, 1, min(1, u / 0.15))
@@ -915,7 +936,7 @@ class Story:
             if u > 0:
                 b = box.copy()
                 for k in (0, 1):
-                    v = step_value(t, digit_steps[k]) if t > digit_steps[k][0][0] else digit_steps[k][0][1] + 15
+                    v = step_value(t, digit_steps[k], spin) if t > digit_steps[k][0][0] else digit_steps[k][0][1] + 15
                     tile = digit_tile(strip, tbg, tov, v)
                     b.alpha_composite(tile, (int(30 + 14 + k * (bw - 28 - dw)), int(30 + (bh - dh) / 2)))
                 b.alpha_composite(dash, (int(box.width / 2 - dash.width / 2), int(box.height / 2 - dash.height / 2)))

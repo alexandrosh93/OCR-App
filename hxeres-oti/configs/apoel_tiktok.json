@@ -1,0 +1,217 @@
+{
+  "photo": "posts/apoel_team.jpg",
+  "team": {
+    "name": "ΑΠΟΕΛ",
+    "color": [
+      30,
+      80,
+      190
+    ],
+    "crest": "assets/apoel_crest.png",
+    "mascot": "assets/apoel_mascot.png"
+  },
+  "voice": "el-GR-NestorasNeural",
+  "rate": "+10%",
+  "pitch": "+0Hz",
+  "voice_fx": false,
+  "max_pause": null,
+  "tail": 0.6,
+  "hook": "Ήξερες ότι μια κυπριακή ομάδα έχει φτάσει στους οκτώ καλύτερους του Τσάμπιονς Λιγκ;",
+  "lines": [
+    "Πάμε πίσω, στις εφτά Μαρτίου του δύο χιλιάδες δώδεκα.",
+    "Το ΑΠΟΕΛ είχε χάσει ένα μηδέν στη Λυών. Στη ρεβάνς όμως, ο Μαντούκα σκόραρε, και η πρόκριση κρίθηκε στα πέναλτι!",
+    "Εκεί, ο Χιώτης έπιασε δύο πέναλτι στη σειρά, και το ΑΠΟΕΛ νίκησε τέσσερα τρία!",
+    "Και έγινε η πρώτη κυπριακή ομάδα που έφτασε στους οκτώ του Τσάμπιονς Λιγκ!"
+  ],
+  "cta": "Ποια άλλη ιστορική στιγμή θες να δούμε; Γράψ' τη στα σχόλια, και κάνε φόλοου στο Κουπονάκι!",
+  "cta_badge": "ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ",
+  "emoji": {
+    "λιγκ": "🏆",
+    "πέναλτι": "😱",
+    "χιώτης": "🧤",
+    "τρία": "🔥",
+    "σχόλια": "👇"
+  },
+  "caption_replace": {
+    "εφτά Μαρτίου": "7 ΜΑΡΤΙΟΥ",
+    "δύο χιλιάδες δώδεκα": "2012",
+    "ένα μηδέν": "1-0",
+    "τέσσερα τρία": "4-3",
+    "δύο πέναλτι": "2 ΠΕΝΑΛΤΙ",
+    "Τσάμπιονς Λιγκ": "CHAMPIONS LEAGUE",
+    "οκτώ": "8",
+    "φόλοου": "FOLLOW",
+    "Κουπονάκι": "KOUPONAKI"
+  },
+  "scenes": [
+    {
+      "type": "date",
+      "backdrop": "posts/apoel_penalty.jpg",
+      "day": "7",
+      "month": "ΜΑΡΤΙΟΥ",
+      "year": "2012",
+      "day_at": {
+        "word": "εφτά"
+      },
+      "month_at": {
+        "word": "μαρτίου"
+      },
+      "year_at": {
+        "word": "δύο"
+      },
+      "year_end": {
+        "word": "δώδεκα",
+        "edge": "end"
+      }
+    },
+    {
+      "type": "score",
+      "backdrop": "posts/apoel_goal.jpg",
+      "photo": "posts/apoel_goal.jpg",
+      "home": "ΑΠΟΕΛ",
+      "away": "ΛΥΩΝ",
+      "away_color": [
+        200,
+        30,
+        50
+      ],
+      "home_at": {
+        "word": "αποελ"
+      },
+      "away_at": {
+        "word": "λυών"
+      },
+      "score_at": {
+        "word": "χάσει",
+        "offset": -0.15
+      },
+      "steps": [
+        {
+          "value": [
+            0,
+            1
+          ],
+          "at": {
+            "word": "χάσει"
+          },
+          "label": "1Ο ΜΑΤΣ"
+        },
+        {
+          "value": [
+            1,
+            1
+          ],
+          "at": {
+            "word": "σκόραρε"
+          },
+          "label": "ΣΥΝΟΛΙΚΟ 1-1",
+          "label_at": {
+            "word": "πρόκριση"
+          }
+        }
+      ]
+    },
+    {
+      "type": "score",
+      "backdrop": "posts/apoel_penalty.jpg",
+      "photo": "posts/apoel_penalty.jpg",
+      "photo2": "posts/apoel_team.jpg",
+      "photo2_at": {
+        "word": "νίκησε"
+      },
+      "home": "ΑΠΟΕΛ",
+      "away": "ΛΥΩΝ",
+      "away_color": [
+        200,
+        30,
+        50
+      ],
+      "home_at": {
+        "word": "εκεί"
+      },
+      "away_at": {
+        "word": "εκεί",
+        "offset": 0.2
+      },
+      "score_at": {
+        "word": "χιώτης"
+      },
+      "steps": [
+        {
+          "value": [
+            4,
+            3
+          ],
+          "at": {
+            "word": "χιώτης"
+          },
+          "label": "ΣΤΑ ΠΕΝΑΛΤΙ"
+        }
+      ],
+      "badge": {
+        "text": "2 ΑΠΟΚΡΟΥΣΕΙΣ!",
+        "at": {
+          "word": "δύο"
+        },
+        "x": 780,
+        "y": 520,
+        "rotate": 10
+      },
+      "land_at": {
+        "word": "τέσσερα",
+        "offset": 0.15
+      }
+    },
+    {
+      "type": "fact",
+      "backdrop": "posts/apoel_team.jpg",
+      "crest_at": 0.0,
+      "words": [
+        {
+          "text": "ΠΡΩΤΗ",
+          "color": "white",
+          "max_size": 230,
+          "at": {
+            "word": "πρώτη"
+          }
+        },
+        {
+          "text": "ΚΥΠΡΙΑΚΗ ΟΜΑΔΑ",
+          "color": "yellow",
+          "at": {
+            "word": "κυπριακή"
+          }
+        },
+        {
+          "text": "ΣΤΟΥΣ 8!",
+          "color": "green",
+          "max_size": 190,
+          "at": {
+            "word": "στους"
+          }
+        },
+        {
+          "text": "ΤΟΥ CHAMPIONS LEAGUE",
+          "color": "white",
+          "max_size": 72,
+          "at": {
+            "word": "τσάμπιονς"
+          }
+        }
+      ],
+      "mascot_at": {
+        "word": "έγινε"
+      },
+      "confetti_at": {
+        "word": "οκτώ"
+      },
+      "stamp": {
+        "text": "ΙΣΤΟΡΙΚΟ!",
+        "at": {
+          "word": "λιγκ",
+          "edge": "end"
+        }
+      }
+    }
+  ]
+}
