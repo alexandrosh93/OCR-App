@@ -31,3 +31,17 @@ python3 make_video.py configs/<όνομα>.json --preview 3,6,9,12 preview.png  
 ```
 
 Γραμματοσειρές: Fira Sans / Fira Sans Extra Condensed (SIL Open Font License, `fonts/OFL.txt`).
+
+## «Από το μηδέν» (χωρίς έτοιμο post): `make_story.py`
+
+Φτιάχνει ολόκληρο το βίντεο μόνο από μια **πραγματική φωτογραφία** και το **γεγονός**, σε σκηνές τύπου
+τηλεοπτικού spot: ημερομηνία με «ρολόι-οδόμετρο» → η φωτό σε κάρτα + πίνακας σκορ → τίτλοι που σκάνε με
+σήμα, μασκότ και κομφετί → end card. Φόντο: η ίδια η φωτογραφία, θολή και χρωματισμένη στα χρώματα της ομάδας.
+
+Οι χρόνοι μπορούν να δένουν σε **λέξεις της φωνής**: `{"word": "πρώτη"}` = τη στιγμή που ακούγεται η λέξη
+(`"edge": "end"` για το τέλος της, `"offset"` για μικροδιόρθωση). Δες `configs/anorthosis_story.json`.
+
+```
+python3 make_story.py configs/anorthosis_story.json ../videos/anorthosis_story.mp4
+python3 make_story.py configs/anorthosis_story.json --preview 3,6,9,12 preview.png   # τυπώνει και τους χρόνους κάθε λέξης
+```
