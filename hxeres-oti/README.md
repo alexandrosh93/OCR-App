@@ -45,3 +45,14 @@ python3 make_video.py configs/<όνομα>.json --preview 3,6,9,12 preview.png  
 python3 make_story.py configs/anorthosis_story.json ../videos/anorthosis_story.mp4
 python3 make_story.py configs/anorthosis_story.json --preview 3,6,9,12 preview.png   # τυπώνει και τους χρόνους κάθε λέξης
 ```
+
+### TikTok μορφή (`configs/anorthosis_tiktok.json`)
+
+- `hook`: η πρώτη ερώτηση λέγεται πάνω στο intro (το intro κρατάει όσο το hook)
+- λεζάντες λέξη-λέξη (σαν CapCut): σπάνε σε φυσικές φράσεις, η λέξη που ακούγεται ανάβει πράσινη
+- `caption_replace`: τι γράφουν οι λεζάντες αντί γι' αυτό που διαβάζει η φωνή
+  (π.χ. «δύο χιλιάδες οκτώ» → 2008, «Τσάμπιονς Λιγκ» → CHAMPIONS LEAGUE, «φόλοου» → FOLLOW)
+- `emoji`: emoji δίπλα στη φράση που περιέχει τη λέξη (π.χ. «σχόλια» → 👇)
+- safe zones TikTok/Reels: τίποτα σημαντικό κάτω από τα tabs, πίσω από τα κουμπιά δεξιά ή στην περιγραφή κάτω
+- σκορ σε βήματα: `steps` (π.χ. 3-0 στο πρώτο ματς → 3-1 συνολικό)
+- κλείνει με «ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ» και χωρίς fade-out, ώστε το βίντεο να κάνει loop
