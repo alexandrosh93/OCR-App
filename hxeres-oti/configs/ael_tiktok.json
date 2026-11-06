@@ -1,0 +1,216 @@
+{
+  "photo": "posts/ael_pitch.jpg",
+  "team": {
+    "name": "ΑΕΛ",
+    "color": [
+      230,
+      175,
+      0
+    ],
+    "crest": "assets/ael_crest.png",
+    "mascot": "assets/ael_mascot.png"
+  },
+  "voice": "el-GR-NestorasNeural",
+  "rate": "+10%",
+  "pitch": "+0Hz",
+  "voice_fx": false,
+  "max_pause": null,
+  "tail": 0.6,
+  "hook": "Ήξερες ότι η ΑΕΛ περίμενε σαράντα τέσσερα ολόκληρα χρόνια για ένα πρωτάθλημα;",
+  "lines": [
+    "Πάμε πίσω, στις πέντε Μαΐου του δύο χιλιάδες δώδεκα, στο Τσίρειο.",
+    "Η ΑΕΛ νίκησε ένα μηδέν την Ανόρθωση, με γκολ του Μπεμπέ, και στέφθηκε πρωταθλήτρια!",
+    "Ήταν ο πρώτος της τίτλος μετά από σαράντα τέσσερα χρόνια, από το χίλια εννιακόσια εξήντα οκτώ!",
+    "Και ήταν το έκτο πρωτάθλημα της ιστορίας της!",
+    "Οι οπαδοί της πλημμύρισαν το γήπεδο, για να γιορτάσουν!"
+  ],
+  "cta": "Ποια άλλη ιστορική στιγμή θες να δούμε; Γράψ' τη στα σχόλια, και κάνε φόλοου στο Κουπονάκι!",
+  "cta_badge": "ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ",
+  "emoji": {
+    "χρόνια": "😳",
+    "μπεμπέ": "⚽",
+    "πρωταθλήτρια": "🏆",
+    "ιστορίας": "🔥",
+    "γιορτάσουν": "🎉",
+    "σχόλια": "👇"
+  },
+  "caption_replace": {
+    "σαράντα τέσσερα": "44",
+    "πέντε Μαΐου": "5 ΜΑΪΟΥ",
+    "δύο χιλιάδες δώδεκα": "2012",
+    "ένα μηδέν": "1-0",
+    "χίλια εννιακόσια εξήντα οκτώ": "1968",
+    "φόλοου": "FOLLOW",
+    "Κουπονάκι": "KOUPONAKI"
+  },
+  "scenes": [
+    {
+      "type": "date",
+      "backdrop": "posts/ael_stands.jpg",
+      "day": "5",
+      "month": "ΜΑΪΟΥ",
+      "year": "2012",
+      "day_at": {
+        "word": "πέντε"
+      },
+      "month_at": {
+        "word": "μαΐου"
+      },
+      "year_at": {
+        "word": "δύο"
+      },
+      "year_end": {
+        "word": "δώδεκα",
+        "edge": "end"
+      }
+    },
+    {
+      "type": "score",
+      "backdrop": "posts/ael_party.jpg",
+      "photo": "posts/ael_party.jpg",
+      "photo2": "posts/ael_toss.jpg",
+      "photo2_at": {
+        "word": "πρωταθλήτρια"
+      },
+      "home": "ΑΕΛ",
+      "away": "ΑΝΟΡΘΩΣΗ",
+      "away_color": [
+        24,
+        84,
+        196
+      ],
+      "home_at": {
+        "word": "αελ"
+      },
+      "away_at": {
+        "word": "ανόρθωση"
+      },
+      "score_at": {
+        "word": "νίκησε"
+      },
+      "steps": [
+        {
+          "value": [
+            1,
+            0
+          ],
+          "at": {
+            "word": "νίκησε"
+          },
+          "label": "ΤΕΛΙΚΟ"
+        }
+      ],
+      "land_at": {
+        "word": "ένα",
+        "offset": 0.2
+      },
+      "badge": {
+        "text": "ΓΚΟΛ ΜΠΕΜΠΕ!",
+        "at": {
+          "word": "μπεμπέ"
+        },
+        "x": 780,
+        "y": 520,
+        "rotate": 10
+      }
+    },
+    {
+      "type": "date",
+      "backdrop": "posts/ael_dance.jpg",
+      "day": "44",
+      "month": "ΧΡΟΝΙΑ ΑΝΑΜΟΝΗΣ",
+      "year": "1968–2012",
+      "day_at": {
+        "word": "σαράντα"
+      },
+      "month_at": {
+        "word": "χρόνια"
+      },
+      "year_at": {
+        "word": "χίλια"
+      },
+      "year_end": {
+        "word": "οκτώ",
+        "edge": "end"
+      }
+    },
+    {
+      "type": "fact",
+      "backdrop": "posts/ael_pitch.jpg",
+      "crest_at": 0.0,
+      "words": [
+        {
+          "text": "ΤΟ ΕΚΤΟ",
+          "color": "white",
+          "max_size": 210,
+          "at": {
+            "word": "έκτο"
+          }
+        },
+        {
+          "text": "ΠΡΩΤΑΘΛΗΜΑ!",
+          "color": "yellow",
+          "max_size": 190,
+          "at": {
+            "word": "πρωτάθλημα"
+          }
+        },
+        {
+          "text": "ΤΗΣ ΙΣΤΟΡΙΑΣ ΤΗΣ",
+          "color": "white",
+          "max_size": 90,
+          "at": {
+            "word": "ιστορίας"
+          }
+        }
+      ],
+      "mascot_at": {
+        "word": "ήταν"
+      },
+      "confetti_at": {
+        "word": "ιστορίας"
+      },
+      "stamp": {
+        "text": "ΙΣΤΟΡΙΚΟ!",
+        "at": {
+          "word": "της",
+          "nth": 1,
+          "edge": "end"
+        }
+      }
+    },
+    {
+      "type": "gallery",
+      "backdrop": "posts/ael_fans3.jpg",
+      "photos": [
+        {
+          "photo": "posts/ael_fans.jpg",
+          "at": {
+            "word": "οπαδοί"
+          }
+        },
+        {
+          "photo": "posts/ael_fans2.jpg",
+          "at": {
+            "word": "πλημμύρισαν"
+          }
+        },
+        {
+          "photo": "posts/ael_net.jpg",
+          "at": {
+            "word": "γήπεδο"
+          }
+        }
+      ],
+      "sticker": {
+        "text": "ΑΠΟΘΕΩΣΗ!",
+        "at": {
+          "word": "γιορτάσουν"
+        },
+        "x": 700,
+        "y": 470,
+        "rotate": 8
+      }
+    }
+  ]
+}
