@@ -266,9 +266,9 @@ class Story:
                 [cfg.get('cta', 'Ακολούθησε το Κουπονάκι για περισσότερα!')]
         lines = [l if isinstance(l, dict) else {'text': l} for l in lines]      # a line may override rate / pitch
         self.line_text = [l['text'] for l in lines]
-        mp = cfg.get('max_pause', 0.22)
-        self.vo = [tighten(*tts_words(l['text'], l.get('voice', voice), l.get('rate', rate), l.get('pitch', pitch), fx),
-                           max_pause=mp) for l in lines]
+        mp = cfg.get('max_pause', 0.22)               # null = keep the voice's natural pauses
+        raw = [tts_words(l['text'], l.get('voice', voice), l.get('rate', rate), l.get('pitch', pitch), fx) for l in lines]
+        self.vo = [tighten(*v, max_pause=mp) if mp else v for v in raw]
         self.intro = Intro()
         self.team = cfg['team']
         self.tcol = tuple(self.team['color'])
@@ -927,12 +927,14 @@ class Story:
 
     # ---------------------------------------------------------------- audio / encode
     def audio(self):
-        out = np.zeros(int((self.total + 2) * SR), np.float32)
+        n = int((self.total + 2) * SR)
+        vo_track, sfx_track = np.zeros(n, np.float32), np.zeros(n, np.float32)
 
-        def add(t, x, g):
+        def add(t, x, g, dst=None):
+            dst = sfx_track if dst is None else dst
             i = int(max(t, 0) * SR)
-            x = x[:max(0, len(out) - i)]
-            out[i:i + len(x)] += x * g
+            x = x[:max(0, n - i)]
+            dst[i:i + len(x)] += x * g
 
         for t, x, g in self.intro.sfx():
             add(t, x, g * 0.75)                           # keep the intro hits under the spoken hook
@@ -942,8 +944,17 @@ class Story:
             f, g = lib[kind]
             add(t, f(), g)
         for t, (v, _) in zip(self.vo_starts, self.vo):
-            add(t, v, 1.0)
-        out = out[:int(self.total * SR)]
+            add(t, v, 1.0, vo_track)
+
+        def smooth(x, k):
+            c = np.concatenate([[0.0], np.cumsum(x, dtype=np.float64)])
+            y = (c[k:] - c[:-k]) / k
+            return np.concatenate([np.full(k // 2, y[0]), y, np.full(len(x) - len(y) - k // 2, y[-1])]).astype(np.float32)
+
+        # sound effects duck under the voice so it stays clear and in front
+        rms = np.sqrt(np.maximum(smooth(vo_track ** 2, int(0.06 * SR)), 0))
+        duck = smooth(1 - 0.5 * np.clip(rms / 0.06, 0, 1), int(0.12 * SR))
+        out = (vo_track * 1.1 + sfx_track * duck)[:int(self.total * SR)]
         fade = int(0.12 * SR)                             # no fade to black: TikTok loops the video
         out[-fade:] *= np.linspace(1, 0, fade)
         out = np.tanh(out * 1.1) / np.tanh(1.1) * 0.95
