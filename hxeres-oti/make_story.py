@@ -629,12 +629,21 @@ class Story:
             im.alpha_composite(c, (x, 12))
             x += c.width + 12
         avail = pw - x - skew - (44 if not mirror else 20)
-        size = 58
+        lines = name.split('\n')
+        size = 58 if len(lines) == 1 else 50
         while size > 28:
-            txt = plain_text(name, fnt('FiraSansExtraCondensed-Black', size), stroke=3)
-            if txt.width <= avail:
+            parts = [plain_text(lines[0], fnt('FiraSansExtraCondensed-Black', size), stroke=3)]
+            if len(lines) > 1:                       # second line smaller, e.g. ΟΛΥΜΠΙΑΚΟΣ / ΠΕΙΡΑΙΩΣ
+                parts.append(plain_text(lines[1], fnt('FiraSansExtraCondensed-Bold', int(size * 0.62)), stroke=2))
+            if max(pi.width for pi in parts) <= avail:
                 break
             size -= 2
+        txt = Image.new('RGBA', (max(pi.width for pi in parts), sum(pi.height for pi in parts) - 10 * (len(parts) - 1)),
+                        (0, 0, 0, 0))
+        yy = 0
+        for pi in parts:
+            txt.alpha_composite(pi, ((txt.width - pi.width) // 2, yy))
+            yy += pi.height - 10
         tx = x if crest is not None else x + (avail - txt.width) / 2
         im.alpha_composite(txt, (int(tx), int(ph / 2 - txt.height / 2)))
         return im
