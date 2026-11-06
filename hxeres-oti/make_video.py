@@ -468,6 +468,7 @@ class Reel:
         for i in range(1, len(self.vo) - 1):
             starts.append(t)
             t += d[i] + 0.4
+        t += self.cfg.get('hold', 0.7)          # let the finished layout breathe before the end card
         self.t_end = t - 0.3
         starts.append(t)
         self.vo_starts = starts
@@ -599,7 +600,10 @@ class Reel:
         pad = 34
         f_day, f_year = fnt('FiraSans-SemiBold', 36), fnt('FiraSansExtraCondensed-Black', 88)
         icon = calendar_icon(92)
-        dw = 330
+        meas = ImageDraw.Draw(Image.new('L', (1, 1)))
+        # the date card widens for long month names (e.g. «27 ΑΥΓΟΥΣΤΟΥ»)
+        dw = int(max(330, 22 + icon.width + 18 + max(meas.textlength(p['day'], font=f_day),
+                                                     meas.textlength(p['year'], font=f_year)) + 26))
         title_w = (x1 - x0) - 2 * pad - dw - 40
         size = 96
         while True:
