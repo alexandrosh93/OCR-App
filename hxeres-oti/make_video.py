@@ -514,9 +514,10 @@ class Reel:
         y = hero_top
         hx = 60 + col_w / 2 if crest else W / 2
         for hl in cfg.get('headline', []):
-            size = 170
-            while size > 60:
-                im = sticker_text(hl['text'], fnt('FiraSansExtraCondensed-Black', size), hl.get('color', 'white'))
+            size = hl.get('max_size', 170)
+            while size > 40:
+                im = sticker_text(hl['text'], fnt('FiraSansExtraCondensed-Black', size), hl.get('color', 'white'),
+                                  stroke=int(max(6, size * 0.075)), depth=int(max(5, size * 0.055)))
                 if im.width <= col_w:
                     break
                 size -= 6
@@ -561,12 +562,34 @@ class Reel:
             sx = x0 + (x1 - x0 - (cw * cols + gap * (cols - 1))) / 2
             fl = fnt('FiraSansExtraCondensed-Bold', 34 if cw > 200 else 28)
             fv = fnt('FiraSansExtraCondensed-Black', int(min(118, ch * 0.56)))
+            meas = ImageDraw.Draw(Image.new('L', (1, 1)))
             for i, it in enumerate(items):
                 r, c = divmod(i, cols)
                 t0 = self.at(it['at'])
+                ls = fl.size
+                while ls > 18 and meas.textlength(it['label'], font=fnt('FiraSansExtraCondensed-Bold', ls)) > cw - 28:
+                    ls -= 2
                 self.stats.append(dict(value=it['value'], label=it['label'], t=t0, cx=sx + cw * (c + .5) + gap * c,
-                                       cy=gy + ch * (r + .5) + gap * r, w=int(cw), h=int(ch), fl=fl, fv=fv))
+                                       cy=gy + ch * (r + .5) + gap * r, w=int(cw), h=int(ch),
+                                       fl=fnt('FiraSansExtraCondensed-Bold', ls), fv=fv))
                 self.events.append((t0, 'pop'))
+        # real photo card (pops in over the middle zone, replaces the stat cards)
+        self.photo = None
+        if cfg.get('photo'):
+            ph = cfg['photo']
+            src = Image.open(os.path.join(HERE, ph['image'])).convert('RGB')
+            b = 12
+            pw = ph.get('width', 860)
+            phh = int(min(pw * src.height / src.width, mid_bot - mid_top + 40))
+            frame = Image.new('RGBA', (pw + 2 * b, phh + 2 * b), (0, 0, 0, 0))
+            ImageDraw.Draw(frame).rounded_rectangle((0, 0, frame.width - 1, frame.height - 1), 30, fill=(246, 246, 240, 255))
+            mask = Image.new('L', (pw, phh), 0)
+            ImageDraw.Draw(mask).rounded_rectangle((0, 0, pw - 1, phh - 1), 22, fill=255)
+            glow, gp = glow_of(frame, 18, LIME)
+            t0 = self.at(ph['at'])
+            self.photo = dict(src=src, frame=frame, mask=mask, glow=glow, b=b, w=pw, h=phh, t=t0,
+                              cx=W / 2 + 20, cy=(mid_top + mid_bot) / 2, rot=ph.get('rotate', -3))
+            self.events += [(t0, 'whoosh'), (t0 + 0.3, 'thud')]
         # end card
         self.font_cta = fnt('FiraSans-SemiBold', 56)
         self.events += [(T_INTRO - 0.15, 'whoosh'), (self.t_end - 0.1, 'whoosh'), (self.t_end + 0.2, 'boom_soft')]
@@ -679,7 +702,8 @@ class Reel:
 
     def draw_stat(self, fr, st, t):
         u = t - st['t']
-        if u <= 0:
+        hide = 1 - ease((t - self.photo['t']) / 0.3) if self.photo else 1
+        if u <= 0 or hide <= 0:
             return
         w, h = st['w'], st['h']
         card = Image.new('RGBA', (w + 60, h + 60), (0, 0, 0, 0))
@@ -697,7 +721,27 @@ class Reel:
         lw = d.textlength(st['label'], font=st['fl'])
         d.text((30 + w / 2 - lw / 2, 30 + h - 58), st['label'], font=st['fl'], fill=(255, 255, 255, 255))
         s = 0.3 + 0.7 * ease_out_back(u / 0.45, 2.0)
-        place(fr, card, st['cx'], st['cy'] + 3 * math.sin(t * 2 + st['cx']), s, min(1, u / 0.15))
+        place(fr, card, st['cx'], st['cy'] + 3 * math.sin(t * 2 + st['cx']), s, min(1, u / 0.15) * hide)
+
+    def draw_photo(self, fr, t):
+        P = self.photo
+        u = t - P['t'] if P else -1
+        if u <= 0:
+            return
+        src, w, h = P['src'], P['w'], P['h']
+        z = 1 + 0.08 * ease(u / 6)                       # slow Ken Burns inside the frame
+        cw = min(src.width, src.height * w / h) / z
+        chh = cw * h / w
+        x0, y0 = (src.width - cw) / 2 + 20 * ease(u / 6), (src.height - chh) / 2
+        img = src.resize((w, h), Image.BILINEAR, box=(x0, y0, x0 + cw, y0 + chh))
+        card = P['frame'].copy()
+        card.paste(img, (P['b'], P['b']), P['mask'])
+        e = ease_out_back(u / 0.6, 1.6)
+        rot = P['rot'] + 14 * (1 - ease_out(u / 0.6))
+        s = 0.35 + 0.65 * e
+        dy = 4 * math.sin(t * 1.6)
+        place(fr, P['glow'], P['cx'], P['cy'] + dy, s, 0.8 * min(1, u / 0.3), rot=rot)
+        place(fr, card, P['cx'], P['cy'] + dy, s, min(1, u / 0.15), rot=rot)
 
     def main_frame(self, t):
         z = 1 + 0.06 * ease((t - T_INTRO) / (self.total - T_INTRO))
@@ -711,6 +755,7 @@ class Reel:
             fr = Image.blend(self.intro.background(t).convert('RGBA'), fr, ease(x))
         for st in self.stats:
             self.draw_stat(fr, st, t)
+        self.draw_photo(fr, t)
         # crest + stars + shine
         C = self.crest
         if C and t > C['t']:
