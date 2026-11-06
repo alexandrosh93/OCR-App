@@ -520,7 +520,8 @@ class Story:
                     if t >= s - 0.03:
                         k = i
                 u = t - c['t0']
-                place(fr, c['imgs'][k], XC, CAP_Y, 0.82 + 0.18 * ease_out_back(u / 0.14, 2.0), min(1, u / 0.06))
+                place(fr, c['imgs'][k], XC, getattr(self, 'cap_y', CAP_Y), 0.82 + 0.18 * ease_out_back(u / 0.14, 2.0),
+                      min(1, u / 0.06))
                 return
 
     # ---------------------------------------------------------------- scene: date

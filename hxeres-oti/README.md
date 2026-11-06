@@ -56,3 +56,14 @@ python3 make_story.py configs/anorthosis_story.json --preview 3,6,9,12 preview.p
 - safe zones TikTok/Reels: τίποτα σημαντικό κάτω από τα tabs, πίσω από τα κουμπιά δεξιά ή στην περιγραφή κάτω
 - σκορ σε βήματα: `steps` (π.χ. 3-0 στο πρώτο ματς → 3-1 συνολικό)
 - κλείνει με «ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ» και χωρίς fade-out, ώστε το βίντεο να κάνει loop
+
+## Μοντάζ «TikToker» (CapCut style): `make_tiktok.py`
+
+Η αληθινή φωτογραφία σε όλο το πλάτος με γρήγορα cuts πάνω στις λέξεις της φωνής: punch-in zoom,
+μεταβάσεις `zoomblur` / `whip` / `glitch` / `flash` / `rewind` (VHS, με PLAY/REC και ημερομηνία κάμερας),
+emoji & stickers που σκάνε, τρανταγμοί και ηχητικά σε κάθε «χτύπημα», λεζάντες λέξη-λέξη.
+Το βίντεο περιγράφεται ως λίστα πλάνων (`shots`) — δες `configs/anorthosis_edit.json`.
+
+```
+python3 make_tiktok.py configs/anorthosis_edit.json ../videos/anorthosis_edit.mp4
+```
