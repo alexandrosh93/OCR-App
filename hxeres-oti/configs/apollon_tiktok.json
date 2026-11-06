@@ -1,0 +1,197 @@
+{
+  "photo": "posts/apollon_lockerroom.jpg",
+  "team": {
+    "name": "ΑΠΟΛΛΩΝΑΣ",
+    "color": [
+      30,
+      90,
+      200
+    ],
+    "crest": "assets/apollon_crest.png",
+    "mascot": "assets/apollon_mascot.png"
+  },
+  "voice": "el-GR-NestorasNeural",
+  "rate": "+10%",
+  "pitch": "+0Hz",
+  "voice_fx": false,
+  "max_pause": null,
+  "hook": "Ήξερες ότι ο Απόλλωνας Λεμεσού έχει πάρει πρωτάθλημα χωρίς ούτε μία ήττα;",
+  "lines": [
+    "Πάμε πίσω, στη σεζόν δύο χιλιάδες πέντε, δύο χιλιάδες έξι.",
+    "Σε είκοσι έξι αγώνες, έκανε δεκαεννιά νίκες, εφτά ισοπαλίες, και μηδέν ήττες!",
+    "Και στέφθηκε πρωταθλητής, χωρίς να χάσει ούτε ένα ματς!",
+    "Και το πιο τρελό; Τον τίτλο τον πήρε με μόλις έναν βαθμό διαφορά από την Ομόνοια!"
+  ],
+  "cta": "Ποια άλλη ιστορική στιγμή θες να δούμε; Γράψ' τη στα σχόλια, και κάνε φόλοου στο Κουπονάκι!",
+  "cta_badge": "ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ",
+  "emoji": {
+    "ήττα": "😳",
+    "ήττες": "🔥",
+    "ματς": "🏆",
+    "ομόνοια": "😱",
+    "σχόλια": "👇"
+  },
+  "caption_replace": {
+    "δύο χιλιάδες πέντε δύο χιλιάδες έξι": "2005-06",
+    "Απόλλωνας Λεμεσού": "ΑΠΟΛΛΩΝΑΣ ΛΕΜΕΣΟΥ",
+    "είκοσι έξι": "26",
+    "δεκαεννιά": "19",
+    "εφτά": "7",
+    "μηδέν": "0",
+    "έναν βαθμό": "1 ΒΑΘΜΟ",
+    "φόλοου": "FOLLOW",
+    "Κουπονάκι": "KOUPONAKI"
+  },
+  "scenes": [
+    {
+      "type": "date",
+      "backdrop": "posts/apollon_fans.jpg",
+      "day": "ΣΕΖΟΝ",
+      "day_size": 300,
+      "year": "2005–06",
+      "day_at": {
+        "word": "σεζόν"
+      },
+      "year_at": {
+        "word": "δύο"
+      },
+      "year_end": {
+        "word": "έξι",
+        "edge": "end"
+      }
+    },
+    {
+      "type": "stats",
+      "backdrop": "posts/apollon_lineup.jpg",
+      "photo": "posts/apollon_lineup.jpg",
+      "pill": "26 ΑΓΩΝΕΣ",
+      "pill_at": {
+        "word": "είκοσι"
+      },
+      "items": [
+        {
+          "value": 19,
+          "label": "ΝΙΚΕΣ",
+          "color": "lime",
+          "at": {
+            "word": "δεκαεννιά"
+          }
+        },
+        {
+          "value": 7,
+          "label": "ΙΣΟΠΑΛΙΕΣ",
+          "color": "yellow",
+          "at": {
+            "word": "εφτά"
+          }
+        },
+        {
+          "value": 0,
+          "label": "ΗΤΤΕΣ",
+          "color": "white",
+          "hero": true,
+          "at": {
+            "word": "μηδέν"
+          }
+        }
+      ]
+    },
+    {
+      "type": "fact",
+      "backdrop": "posts/apollon_cake.jpg",
+      "crest_at": 0.0,
+      "words": [
+        {
+          "text": "ΠΡΩΤΑΘΛΗΤΗΣ",
+          "color": "white",
+          "max_size": 200,
+          "at": {
+            "word": "πρωταθλητής"
+          }
+        },
+        {
+          "text": "ΑΗΤΤΗΤΟΣ!",
+          "color": "green",
+          "max_size": 210,
+          "at": {
+            "word": "χωρίς"
+          }
+        },
+        {
+          "text": "2005–06",
+          "color": "yellow",
+          "max_size": 90,
+          "at": {
+            "word": "ματς"
+          }
+        }
+      ],
+      "mascot_at": {
+        "word": "στέφθηκε"
+      },
+      "confetti_at": {
+        "word": "ματς"
+      },
+      "stamp": {
+        "text": "0 ΗΤΤΕΣ!",
+        "at": {
+          "word": "ματς",
+          "edge": "end"
+        }
+      }
+    },
+    {
+      "type": "table",
+      "backdrop": "posts/apollon_lockerroom.jpg",
+      "photo": "posts/apollon_lockerroom.jpg",
+      "photo2": "posts/apollon_cake.jpg",
+      "title": "ΒΑΘΜΟΛΟΓΙΑ 2005–06",
+      "title_at": {
+        "word": "τρελό"
+      },
+      "rows_at": {
+        "word": "τίτλο"
+      },
+      "rows": [
+        {
+          "pos": 1,
+          "name": "ΑΠΟΛΛΩΝΑΣ",
+          "crest": "assets/apollon_crest.png",
+          "points": 64,
+          "highlight": true,
+          "color": [
+            30,
+            90,
+            200
+          ],
+          "points_at": {
+            "word": "βαθμό"
+          }
+        },
+        {
+          "pos": 2,
+          "name": "ΟΜΟΝΟΙΑ",
+          "points": 63,
+          "color": [
+            0,
+            140,
+            70
+          ],
+          "points_at": {
+            "word": "ομόνοια"
+          }
+        }
+      ],
+      "badge": {
+        "text": "+1 ΒΑΘΜΟΣ",
+        "at": {
+          "word": "διαφορά"
+        },
+        "x": 790,
+        "y": 505,
+        "rotate": 10
+      }
+    }
+  ],
+  "tail": 0.6
+}

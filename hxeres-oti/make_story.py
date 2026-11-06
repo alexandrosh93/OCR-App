@@ -282,7 +282,8 @@ class Story:
         self.scenes = []
         for i, sc in enumerate(cfg['scenes']):
             line, T = i + 1, self.scene_t[i]
-            self.scenes.append(dict(T=T, draw=getattr(self, 'build_' + sc['type'])(sc, line, T)))
+            self.scenes.append(dict(T=T, bd=self.bd_for(sc.get('backdrop')),
+                                    draw=getattr(self, 'build_' + sc['type'])(sc, line, T)))
             if i:
                 self.events.append((T - 0.2, 'whoosh'))
                 self.flashes.append(T)
@@ -330,6 +331,46 @@ class Story:
         self.events += [(tt, 'tick') for tt in kept]
 
     # ---------------------------------------------------------------- backdrop
+    def load_photo(self, path=None):
+        """Extra real photos per scene (cached); None = the main photo."""
+        if path is None:
+            return self.photo
+        cache = self.__dict__.setdefault('_photos', {})
+        if path not in cache:
+            cache[path] = Image.open(os.path.join(HERE, path)).convert('RGB')
+        return cache[path]
+
+    def bd_for(self, path=None):
+        if path is None:
+            return self.bd
+        cache = self.__dict__.setdefault('_bds', {})
+        if path not in cache:
+            cache[path] = self.make_bd(self.load_photo(path))
+        return cache[path]
+
+    def make_bd(self, p):
+        """Blurred, darkened, team-tinted cover of a photo (1.2x the frame, for slow drift)."""
+        BW, BH = int(W * 1.2), int(H * 1.2)
+        k = max(BW / p.width, BH / p.height)
+        small = p.resize((max(1, int(p.width * k / 6)), max(1, int(p.height * k / 6))), Image.BILINEAR)
+        big = small.filter(ImageFilter.GaussianBlur(7)).resize((int(p.width * k), int(p.height * k)), Image.BILINEAR)
+        x0, y0 = (big.width - BW) // 2, (big.height - BH) // 2
+        bd = big.crop((x0, y0, x0 + BW, y0 + BH))
+        bd = Image.blend(bd, Image.new('RGB', bd.size, NAVY), 0.58)
+        return Image.blend(bd, vgrad(bd.size, shade(self.tcol, 0.55), NAVY), 0.32)
+
+    def scene_backdrop(self, t):
+        """Backdrop of the current scene, cross-fading from the previous scene's photo."""
+        i = 0
+        for k, sc in enumerate(self.scenes):
+            if sc['T'] <= t:
+                i = k
+        cur = self.scenes[i]
+        fr = self.backdrop(t, cur['bd'])
+        if i > 0 and t < cur['T'] + 0.4 and self.scenes[i - 1]['bd'] is not cur['bd']:
+            fr = Image.blend(self.backdrop(t, self.scenes[i - 1]['bd']), fr, ease((t - cur['T']) / 0.4))
+        return fr
+
     def build_backdrop(self):
         p = self.photo
         BW, BH = int(W * 1.2), int(H * 1.2)
@@ -361,12 +402,13 @@ class Story:
             self.bokeh.append(dict(spr=spr, x=rnd.uniform(0, W), y=rnd.uniform(0, H), vx=rnd.uniform(-10, 10),
                                    vy=rnd.uniform(-38, -12)))
 
-    def backdrop(self, t):
+    def backdrop(self, t, bd=None):
+        bd = self.bd if bd is None else bd
         z = 1 + 0.08 * ease(t / self.total)
-        ww, wh = self.bd.width / z, self.bd.height / z
-        cx = self.bd.width / 2 + (self.bd.width - ww) / 2 * math.sin(t * 0.3)
-        cy = self.bd.height / 2
-        fr = self.bd.resize((W, H), Image.BILINEAR, box=(cx - ww / 2, cy - wh / 2, cx + ww / 2, cy + wh / 2)).convert('RGBA')
+        ww, wh = bd.width / z, bd.height / z
+        cx = bd.width / 2 + (bd.width - ww) / 2 * math.sin(t * 0.3)
+        cy = bd.height / 2
+        fr = bd.resize((W, H), Image.BILINEAR, box=(cx - ww / 2, cy - wh / 2, cx + ww / 2, cy + wh / 2)).convert('RGBA')
         for side in (0, 1):
             m = self.beam.rotate(8 * math.sin(t * 0.6 + side * 2.0), center=(0, 0), resample=Image.BILINEAR)
             if side:
@@ -527,24 +569,37 @@ class Story:
     # ---------------------------------------------------------------- scene: date
     def build_date(self, sc, line, T):
         tD = self.at(line, sc.get('day_at', 0.0))
-        tM = self.at(line, sc.get('month_at', {'word': sc['month']}))
+        month = fit_text(sc['month'], 'yellow', TEXT_W - 260, 150) if sc.get('month') else None
+        tM = self.at(line, sc.get('month_at', {'word': sc['month']})) if month is not None else None
         tY0, tY1 = self.at(line, sc['year_at']), self.at(line, sc['year_end'])
-        day = fit_text(sc['day'], 'white', TEXT_W, 360)
+        day = fit_text(sc['day'], 'white', TEXT_W, sc.get('day_size', 360))
         dglow, _ = glow_of(day, 30, LIME)
-        month = fit_text(sc['month'], 'yellow', TEXT_W - 260, 150)
         icon = calendar_icon(100)
-        tw, th, gap = 150, 200, 16
-        strip = odometer_strip(fnt('FiraSansExtraCondensed-Black', 170), tw, th, LIME)
+        chars = sc['year']
+        nd = sum(c.isdigit() for c in chars)
+        gap = 16
+        tw = int(min(150, (TEXT_W + 40 - gap * (len(chars) - 1)) / (nd + 0.45 * (len(chars) - nd))))
+        th = int(tw * 4 / 3)
+        strip = odometer_strip(fnt('FiraSansExtraCondensed-Black', int(th * 0.85)), tw, th, LIME)
         bg, ov = tile_parts(tw, th)
-        n = len(sc['year'])
-        x0 = XC - (n * tw + (n - 1) * gap) / 2 + tw / 2
-        rolls = [dict(target=int(c), t0=tY0 + 0.08 * i, t1=tY1 + 0.1 * i, spins=1 + i, cx=x0 + i * (tw + gap))
-                 for i, c in enumerate(sc['year'])]
-        self.events += [(tD, 'thud'), (tM, 'pop'), (tY0 - 0.35, 'pop')]
+        gf = fnt('FiraSansExtraCondensed-Black', int(th * 0.7))
+        widths = [tw if c.isdigit() else int(tw * 0.45) for c in chars]
+        x = XC - (sum(widths) + gap * (len(chars) - 1)) / 2
+        items, di = [], 0
+        for c, w in zip(chars, widths):
+            if c.isdigit():
+                items.append(dict(digit=True, target=int(c), t0=tY0 + 0.06 * di, t1=tY1 + 0.04 * di, spins=1 + di, cx=x + w / 2))
+                di += 1
+            else:                                         # static glyph between the tiles, e.g. the dash in 2005–06
+                items.append(dict(digit=False, im=plain_text(c, gf, LIME), cx=x + w / 2))
+            x += w + gap
+        self.events += [(tD, 'thud'), (tY0 - 0.35, 'pop')] + ([(tM, 'pop')] if tM is not None else [])
         self.shakes.append((tD, 14))
-        for r in rolls:
-            self.add_ticks(lambda tt, r=r: roll(tt, r['target'], r['t0'], r['t1'], r['spins']), r['t0'], r['t1'])
-        Yi, Yd, Ym, Yy = 450, 690, 935, 1140
+        for r in items:
+            if r['digit']:
+                self.add_ticks(lambda tt, r=r: roll(tt, r['target'], r['t0'], r['t1'], r['spins']), r['t0'], r['t1'])
+        Yi, Yd, Ym = 450, 690, 935
+        Yy = 1140 if month is not None else 950
 
         def draw(fr, t):
             u = t - (tD - 0.25)
@@ -552,11 +607,11 @@ class Story:
                 place(fr, icon, XC, Yi, ease_out_back(u / 0.4, 2.0), min(1, u / 0.15))
             u = t - tD
             if u > 0:
-                s = 1 + 0.55 * (1 - ease_out(u / 0.22, 3))
-                place(fr, dglow, XC, Yd, s, 0.55 * min(1, u / 0.2))
-                place(fr, day, XC, Yd, s, min(1, u / 0.1))
-            u = t - tM
-            if u > 0:
+                k = 1 + 0.55 * (1 - ease_out(u / 0.22, 3))
+                place(fr, dglow, XC, Yd, k, 0.55 * min(1, u / 0.2))
+                place(fr, day, XC, Yd, k, min(1, u / 0.1))
+            if month is not None and t > tM:
+                u = t - tM
                 q = ease_out(u / 0.35)
                 place(fr, month, XC, Ym + 40 * (1 - q), 1, min(1, u / 0.2))
                 L = 100 * q
@@ -567,15 +622,175 @@ class Story:
                     d.rounded_rectangle((XC + half, Ym - 5, XC + half + L, Ym + 5), 5, fill=LIME + (255,))
             u = t - (tY0 - 0.35)
             if u > 0:
-                s = ease_out_back(u / 0.4, 1.8)
-                for r in rolls:
-                    tile = digit_tile(strip, bg, ov, roll(t, r['target'], r['t0'], r['t1'], r['spins']))
-                    place(fr, tile, r['cx'], Yy, s, min(1, u / 0.15))
+                k = ease_out_back(u / 0.4, 1.8)
+                for r in items:
+                    im = digit_tile(strip, bg, ov, roll(t, r['target'], r['t0'], r['t1'], r['spins'])) if r['digit'] else r['im']
+                    place(fr, im, r['cx'], Yy, k, min(1, u / 0.15))
+        return draw
+
+    # ---------------------------------------------------------------- scene: stats
+    def stat_digits(self, value, t0, t1, strip, tbg, tov, dw, gap=6):
+        """Multi-digit odometer number that lands on `value` between t0 and t1."""
+        ds = str(value)
+        rolls = [dict(target=int(c), t0=t0 + 0.06 * j, t1=t1 + 0.06 * j, spins=1 + j) for j, c in enumerate(ds)]
+
+        def img(t):
+            out = Image.new('RGBA', (len(ds) * dw + gap * (len(ds) - 1), tbg.height), (0, 0, 0, 0))
+            for j, r in enumerate(rolls):
+                out.alpha_composite(digit_tile(strip, tbg, tov, roll(t, r['target'], r['t0'], r['t1'], r['spins'])),
+                                    (j * (dw + gap), 0))
+            return out
+        for r in rolls:
+            self.add_ticks(lambda tt, r=r: roll(tt, r['target'], r['t0'], r['t1'], r['spins']), r['t0'], r['t1'])
+        return img
+
+    def pill_img(self, text, size=40):
+        ptxt = plain_text(text, fnt('FiraSansExtraCondensed-Bold', size), (6, 30, 16))
+        h = int(size * 1.55)
+        pill = Image.new('RGBA', (ptxt.width + 50, h), (0, 0, 0, 0))
+        ImageDraw.Draw(pill).rounded_rectangle((0, 0, pill.width - 1, h - 1), h // 2, fill=LIME + (255,))
+        pill.alpha_composite(ptxt, (25, int(h / 2 - ptxt.height / 2)))
+        return pill
+
+    def build_stats(self, sc, line, T):
+        """Photo card + a row of stat boxes whose numbers roll in on the spoken words (19 / 7 / 0)."""
+        card = self.photo_card(800, 470, self.load_photo(sc.get('photo')))
+        tP = T + 0.12
+        pill = self.pill_img(sc['pill']) if sc.get('pill') else None
+        tPl = self.at(line, sc.get('pill_at', 0.2)) if pill is not None else None
+        items = sc['items']
+        n, gap = len(items), 22
+        bw, bh = int((TEXT_W - gap * (n - 1)) / n), 236
+        dw = int(min(76, (bw - 46) / max(len(str(it['value'])) for it in items)))
+        dh = int(dw * 1.45)
+        cols = {'lime': LIME, 'yellow': YELLOW, 'white': (255, 255, 255)}
+        strips = {}
+        tbg, tov = tile_parts(dw, dh, border=None, radius=14)
+        boxes = []
+        x0 = XC - (n * bw + (n - 1) * gap) / 2 + bw / 2
+        for i, it in enumerate(items):
+            col = cols.get(it.get('color', 'lime'), LIME)
+            if col not in strips:
+                strips[col] = odometer_strip(fnt('FiraSansExtraCondensed-Black', int(dh * 0.86)), dw, dh, col)
+            ta = self.at(line, it['at'])
+            hero = it.get('hero', False)
+            box = Image.new('RGBA', (bw + 60, bh + 60), (0, 0, 0, 0))
+            if hero:
+                gl = Image.new('RGBA', box.size, (0, 0, 0, 0))
+                ImageDraw.Draw(gl).rounded_rectangle((30, 30, 30 + bw, 30 + bh), 28, outline=LIME + (255,), width=14)
+                box.alpha_composite(gl.filter(ImageFilter.GaussianBlur(12)))
+            ImageDraw.Draw(box).rounded_rectangle((30, 30, 30 + bw, 30 + bh), 28, fill=(8, 20, 36, 242),
+                                                  outline=(LIME if hero else (70, 96, 124)) + (255,), width=5 if hero else 3)
+            lab = plain_text(it['label'], fnt('FiraSansExtraCondensed-Bold', 38))
+            box.alpha_composite(lab, (int(box.width / 2 - lab.width / 2), int(30 + bh - 22 - lab.height)))
+            boxes.append(dict(box=box, t=ta, hero=hero, cx=x0 + i * (bw + gap),
+                              num=self.stat_digits(it['value'], ta - 0.6, ta + 0.05, strips[col], tbg, tov, dw)))
+            self.events.append((ta - 0.6, 'pop'))
+            if hero:
+                self.events.append((ta + 0.05, 'thud'))
+                self.shakes.append((ta + 0.05, 12))
+        self.events.append((tP, 'whoosh'))
+        if tPl is not None:
+            self.events.append((tPl, 'pop'))
+        Yc, Ypill, Yb = 700, 992, 1160
+
+        def draw(fr, t):
+            self.draw_card(fr, card, t, tP, XC, Yc)
+            if tPl is not None and t > tPl:
+                v = t - tPl
+                place(fr, pill, XC, Ypill, 0.6 + 0.4 * ease_out_back(v / 0.35, 2.0), min(1, v / 0.12))
+            for b in boxes:
+                u = t - (b['t'] - 0.7)
+                if u <= 0:
+                    continue
+                im = b['box'].copy()
+                num = b['num'](t)
+                im.alpha_composite(num, (int(im.width / 2 - num.width / 2), 30 + 22))
+                k = 0.3 + 0.7 * ease_out_back(u / 0.4, 2.0)
+                if b['hero'] and t > b['t']:
+                    k *= 1 + 0.08 * (1 - ease_out((t - b['t']) / 0.35))
+                place(fr, im, b['cx'], Yb, k, min(1, u / 0.12))
+        return draw
+
+    # ---------------------------------------------------------------- scene: table
+    def build_table(self, sc, line, T):
+        """Standings snippet (pos · crest · team · points) under a photo stack, with a '+1' style badge."""
+        card = self.photo_card(800, 470, self.load_photo(sc.get('photo')))
+        card2 = self.photo_card(330, 220, self.load_photo(sc['photo2'])) if sc.get('photo2') else None
+        tP = T + 0.12
+        title = self.pill_img(sc['title'], 36) if sc.get('title') else None
+        tT = self.at(line, sc.get('title_at', 0.3)) if title is not None else None
+        tR = self.at(line, sc.get('rows_at', 0.4))
+        rw, rh = TEXT_W + 20, 104
+        dw, dh = 56, 80
+        strip = odometer_strip(fnt('FiraSansExtraCondensed-Black', 70), dw, dh, LIME)
+        tbg, tov = tile_parts(dw, dh, border=None, radius=12)
+        rows = []
+        for i, r in enumerate(sc['rows']):
+            hl = r.get('highlight', False)
+            col = tuple(r.get('color', self.tcol))
+            base = Image.new('RGBA', (rw + 50, rh + 50), (0, 0, 0, 0))
+            if hl:
+                gl = Image.new('RGBA', base.size, (0, 0, 0, 0))
+                ImageDraw.Draw(gl).rounded_rectangle((25, 25, 25 + rw, 25 + rh), 24, outline=LIME + (255,), width=12)
+                base.alpha_composite(gl.filter(ImageFilter.GaussianBlur(10)))
+            d = ImageDraw.Draw(base)
+            d.rounded_rectangle((25, 25, 25 + rw, 25 + rh), 24, fill=(8, 20, 36, 244),
+                                outline=(LIME if hl else (70, 96, 124)) + (255,), width=4 if hl else 3)
+            d.rounded_rectangle((25, 25, 25 + 16, 25 + rh), 8, fill=col + (255,))          # team colour strip
+            cx, cy = 25 + 66, 25 + rh / 2
+            d.ellipse((cx - 30, cy - 30, cx + 30, cy + 30), fill=(LIME if hl else (60, 80, 104)) + (255,))
+            pos = plain_text(str(r['pos']), fnt('FiraSansExtraCondensed-Black', 44), (6, 30, 16) if hl else (255, 255, 255))
+            base.alpha_composite(pos, (int(cx - pos.width / 2), int(cy - pos.height / 2)))
+            x = 25 + 112
+            if r.get('crest'):
+                c = Image.open(os.path.join(HERE, r['crest'])).convert('RGBA')
+                c = c.resize((int(c.width * (rh - 22) / c.height), rh - 22), Image.LANCZOS)
+                base.alpha_composite(c, (x, 25 + 11))
+                x += c.width + 16
+            name = plain_text(r['name'], fnt('FiraSansExtraCondensed-Black', 58), stroke=3)
+            base.alpha_composite(name, (x, int(cy - name.height / 2)))
+            tp = self.at(line, r['points_at'])
+            rows.append(dict(base=base, hl=hl, t=tR + 0.15 * i, side=-1 if i % 2 == 0 else 1,
+                             num=self.stat_digits(r['points'], tp - 0.6, tp + 0.05, strip, tbg, tov, dw)))
+            self.events += [(tR + 0.15 * i, 'whoosh'), (tp + 0.05, 'pop')]
+        badge = None
+        if sc.get('badge'):
+            b = sc['badge']
+            bimg = fit_text(b['text'], b.get('color', 'yellow'), 420, b.get('max_size', 96))
+            badge = dict(im=bimg, glow=glow_of(bimg, 16, LIME)[0], t=self.at(line, b['at']),
+                         x=b.get('x', XC + 250), y=b.get('y', 1000), rot=b.get('rotate', 10))
+            self.events.append((badge['t'], 'thud'))
+            self.shakes.append((badge['t'], 12))
+        self.events.append((tP, 'whoosh'))
+        Yc, Yt, Yr = 690, 985, 1095
+
+        def draw(fr, t):
+            self.draw_card(fr, card, t, tP, XC, Yc)
+            if card2 is not None:
+                self.draw_card(fr, card2, t, tP + 0.35, XC + 240, Yc + 150, rot_end=7)
+            if title is not None and t > tT:
+                v = t - tT
+                place(fr, title, XC, Yt, 0.6 + 0.4 * ease_out_back(v / 0.35, 2.0), min(1, v / 0.12))
+            for i, r in enumerate(rows):
+                u = t - r['t']
+                if u <= 0:
+                    continue
+                im = r['base'].copy()
+                num = r['num'](t)
+                im.alpha_composite(num, (int(25 + rw - 24 - num.width), int(25 + (rh - num.height) / 2)))
+                place(fr, im, XC + r['side'] * 700 * (1 - ease_out_back(u / 0.45, 1.3)), Yr + i * (rh + 16), 1,
+                      min(1, u / 0.12))
+            if badge is not None and t > badge['t']:
+                u = t - badge['t']
+                k = 1 + 1.2 * (1 - ease_out(u / 0.18, 3))
+                place(fr, badge['glow'], badge['x'], badge['y'], k, 0.8 * min(1, u / 0.1), rot=badge['rot'])
+                place(fr, badge['im'], badge['x'], badge['y'], k, min(1, u / 0.06), rot=badge['rot'])
         return draw
 
     # ---------------------------------------------------------------- scene: score
-    def photo_card(self, width, max_h):
-        src = self.photo
+    def photo_card(self, width, max_h, src=None):
+        src = self.photo if src is None else src
         b = 14
         h = int(min(width * src.height / src.width, max_h))
         frame = Image.new('RGBA', (width + 2 * b, h + 2 * b), (0, 0, 0, 0))
@@ -650,7 +865,7 @@ class Story:
 
     def build_score(self, sc, line, T):
         crest = Image.open(os.path.join(HERE, self.team['crest'])).convert('RGBA')
-        card = self.photo_card(800, 600)
+        card = self.photo_card(800, 600, self.load_photo(sc.get('photo')))
         tP = T + 0.12
         tHo, tAw, tBox = self.at(line, sc['home_at']), self.at(line, sc['away_at']), self.at(line, sc['score_at'])
         if 'steps' in sc:
@@ -884,7 +1099,7 @@ class Story:
             fr = self.particles(fr.convert('RGBA'), t, 0.45)
             self.draw_captions(fr, t)
             return fr.convert('RGB')
-        fr = self.backdrop(t)
+        fr = self.scene_backdrop(t)
         x = (t - self.t_intro) / 0.55
         if x < 1:
             fr = Image.blend(self.intro.background(t).convert('RGBA'), fr, ease(x))
