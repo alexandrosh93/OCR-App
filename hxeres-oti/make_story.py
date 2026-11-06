@@ -29,10 +29,15 @@ def norm(w):
     return ''.join(c for c in w if not unicodedata.combining(c) and c.isalnum())
 
 
-def tts_words(text, voice, rate):
+# energetic "sports presenter" voice: presence boost, tighter dynamics
+VOICE_FX = ('highpass=f=80,equalizer=f=180:t=q:w=1:g=-2,equalizer=f=3300:t=q:w=1.4:g=4,'
+            'equalizer=f=8000:t=q:w=1:g=2,acompressor=threshold=-22dB:ratio=3.5:attack=4:release=80:makeup=5')
+
+
+def tts_words(text, voice, rate, pitch='+0Hz', fx=True):
     """Greek TTS + per-word timings. Returns (mono float audio at SR, [[word, start, end], ...])."""
     os.makedirs(CACHE, exist_ok=True)
-    key = hashlib.sha1(f'words|{voice}|{rate}|{text}'.encode()).hexdigest()[:16]
+    key = hashlib.sha1(f'words|{voice}|{rate}|{pitch}|{fx}|{text}'.encode()).hexdigest()[:16]
     wav, js = os.path.join(CACHE, f'{key}.wav'), os.path.join(CACHE, f'{key}.json')
     if not (os.path.exists(wav) and os.path.exists(js)):
         import edge_tts, edge_tts.communicate as c
@@ -41,7 +46,7 @@ def tts_words(text, voice, rate):
             c._SSL_CTX = ssl.create_default_context(cafile=ca)
 
         async def run():
-            comm = edge_tts.Communicate(text, voice, rate=rate, boundary='WordBoundary')
+            comm = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch, boundary='WordBoundary')
             audio, words = bytearray(), []
             async for ch in comm.stream():
                 if ch['type'] == 'audio':
@@ -50,12 +55,22 @@ def tts_words(text, voice, rate):
                     words.append([ch['text'], ch['offset'] / 1e7, (ch['offset'] + ch['duration']) / 1e7])
             return bytes(audio), words
 
-        audio, words = asyncio.run(run())
+        for attempt in range(5):                     # the free TTS endpoint fails now and then: retry
+            try:
+                audio, words = asyncio.run(run())
+                if audio and words:
+                    break
+            except Exception as e:
+                if attempt == 4:
+                    raise
+                print(f'tts retry ({e.__class__.__name__})', file=sys.stderr)
+            import time
+            time.sleep(2 * (attempt + 1))
         mp3 = wav[:-4] + '.mp3'
         open(mp3, 'wb').write(audio)
         t0, t1 = max(0.0, words[0][1] - 0.04), words[-1][2] + 0.3
-        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', mp3, '-ss', f'{t0:.3f}', '-to', f'{t1:.3f}',
-                        '-ar', str(SR), '-ac', '1', '-c:a', 'pcm_s16le', wav], check=True)
+        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', mp3, '-ss', f'{t0:.3f}', '-to', f'{t1:.3f}']
+                       + (['-af', VOICE_FX] if fx else []) + ['-ar', str(SR), '-ac', '1', '-c:a', 'pcm_s16le', wav], check=True)
         os.remove(mp3)
         json.dump([[w, a - t0, b - t0] for w, a, b in words], open(js, 'w', encoding='utf-8'), ensure_ascii=False)
     with wave.open(wav) as w:
@@ -64,6 +79,35 @@ def tts_words(text, voice, rate):
     x[:int(0.01 * SR)] *= np.linspace(0, 1, int(0.01 * SR))
     x[n - int(0.08 * SR):] *= np.linspace(1, 0, int(0.08 * SR))
     return x / max(np.abs(x).max(), 1e-3) * 0.89, json.load(open(js, encoding='utf-8'))
+
+
+def tighten(audio, words, max_pause=0.22, keep_after=0.14):
+    """Shorten long pauses between words (TTS stops ~1s at every '!') so the read stays punchy."""
+    cuts = []
+    for (w0, a0, b0), (w1, a1, b1) in zip(words, words[1:]):
+        c0, c1 = b0 + keep_after, a1 - (max_pause - keep_after)
+        if c1 - c0 > 0.03:
+            cuts.append((c0, c1))
+    if not cuts:
+        return audio, words
+    parts, pos = [], 0
+    f = int(0.004 * SR)
+    for c0, c1 in cuts:
+        i0, i1 = int(c0 * SR), int(c1 * SR)
+        seg = audio[pos:i0].copy()
+        if len(seg) > 2 * f:
+            seg[-f:] *= np.linspace(1, 0, f)
+            if pos:
+                seg[:f] *= np.linspace(0, 1, f)
+        parts.append(seg)
+        pos = i1
+    tail = audio[pos:].copy()
+    tail[:f] *= np.linspace(0, 1, min(f, len(tail)))
+    parts.append(tail)
+
+    def shift(t):
+        return t - sum(min(c1, max(t, c0)) - c0 for c0, c1 in cuts if t > c0)
+    return np.concatenate(parts), [[w, shift(a), shift(b)] for w, a, b in words]
 
 
 def fit_text(text, color, maxw, max_size, min_size=36, step=6):
@@ -161,9 +205,13 @@ def sfx_confetti(dur=1.6):
 class Story:
     def __init__(self, cfg_path):
         self.cfg = cfg = json.load(open(cfg_path, encoding='utf-8'))
-        voice, rate = cfg.get('voice', 'el-GR-NestorasNeural'), cfg.get('rate', '+10%')
+        voice = cfg.get('voice', 'el-GR-NestorasNeural')
+        rate, pitch, fx = cfg.get('rate', '+18%'), cfg.get('pitch', '+10Hz'), cfg.get('voice_fx', True)
         lines = [cfg.get('intro_line', 'Ήξερες ότι;')] + cfg['lines'] + [cfg.get('cta', 'Ακολούθησε το Κουπονάκι για περισσότερα!')]
-        self.vo = [tts_words(l, voice, rate) for l in lines]
+        lines = [l if isinstance(l, dict) else {'text': l} for l in lines]      # a line may override rate / pitch
+        mp = cfg.get('max_pause', 0.22)
+        self.vo = [tighten(*tts_words(l['text'], l.get('voice', voice), l.get('rate', rate), l.get('pitch', pitch), fx),
+                           max_pause=mp) for l in lines]
         self.intro = Intro()
         self.team = cfg['team']
         self.tcol = tuple(self.team['color'])
@@ -509,6 +557,15 @@ class Story:
             mascot = m.resize((int(m.width * hgt / m.height), hgt), Image.LANCZOS)
             tMa = self.at(line, sc.get('mascot_at', 0.5))
             self.events += [(tMa, 'whoosh'), (tMa + 0.35, 'pop')]
+        stamp = None
+        if sc.get('stamp'):
+            st = sc['stamp']
+            simg = fit_text(st['text'], st.get('color', 'yellow'), 560, st.get('max_size', 120))
+            sg, _ = glow_of(simg, 18, LIME)
+            stamp = dict(im=simg, glow=sg, t=self.at(line, st['at']), x=st.get('x', 770), y=st.get('y', 760),
+                         rot=st.get('rotate', 12))
+            self.events.append((stamp['t'], 'thud'))
+            self.shakes.append((stamp['t'], 14))
         tCf = self.at(line, sc['confetti_at']) if sc.get('confetti_at') else None
         if tCf is not None:
             self.events.append((tCf, 'confetti'))
@@ -580,6 +637,11 @@ class Story:
                 if u > 0:
                     s = 1 + 0.65 * (1 - ease_out(u / 0.2, 3))
                     place(fr, wd['im'], W / 2, wd['cy'], s, min(1, u / 0.08))
+            if stamp is not None and t > stamp['t']:
+                u = t - stamp['t']
+                sc_ = 1 + 1.4 * (1 - ease_out(u / 0.18, 3))
+                place(fr, stamp['glow'], stamp['x'], stamp['y'], sc_, 0.8 * min(1, u / 0.1), rot=stamp['rot'])
+                place(fr, stamp['im'], stamp['x'], stamp['y'], sc_, min(1, u / 0.06), rot=stamp['rot'])
             if mascot is not None and t > tMa:
                 u = t - tMa
                 e = ease_out_back(u / 0.55, 1.5)

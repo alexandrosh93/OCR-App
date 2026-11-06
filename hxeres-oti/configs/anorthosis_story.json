@@ -1,25 +1,122 @@
 {
   "photo": "posts/anorthosis_photo.jpg",
-  "team": {"name": "ΑΝΟΡΘΩΣΗ", "color": [24, 84, 196],
-           "crest": "assets/anorthosis_crest.png", "mascot": "assets/anorthosis_mascot.png"},
+  "team": {
+    "name": "ΑΝΟΡΘΩΣΗ",
+    "color": [
+      24,
+      84,
+      196
+    ],
+    "crest": "assets/anorthosis_crest.png",
+    "mascot": "assets/anorthosis_mascot.png"
+  },
   "lines": [
-    "Είκοσι εφτά Αυγούστου, δύο χιλιάδες οκτώ.",
-    "Η Ανόρθωση αποκλείει τον Ολυμπιακό, με συνολικό σκορ τρία ένα!",
-    "Και γίνεται η πρώτη κυπριακή ομάδα, που μπαίνει στους ομίλους του Τσάμπιονς Λιγκ!"
+    "Είκοσι εφτά Αυγούστου, δύο χιλιάδες οκτώ!",
+    "Η Ανόρθωση πετάει έξω τον Ολυμπιακό! Συνολικό σκορ, τρία ένα!",
+    {
+      "text": "Και γίνεται η πρώτη κυπριακή ομάδα στους ομίλους του Τσάμπιονς Λιγκ! Ιστορικό!",
+      "pitch": "+13Hz"
+    }
   ],
   "scenes": [
-    {"type": "date", "day": "27", "month": "ΑΥΓΟΥΣΤΟΥ", "year": "2008",
-     "day_at": {"word": "είκοσι"}, "month_at": {"word": "αυγούστου"},
-     "year_at": {"word": "δύο"}, "year_end": {"word": "οκτώ", "edge": "end"}},
-    {"type": "score", "home": "ΑΝΟΡΘΩΣΗ", "away": "ΟΛΥΜΠΙΑΚΟΣ", "away_color": [196, 22, 44], "score": [3, 1],
-     "home_at": {"word": "ανόρθωση"}, "away_at": {"word": "ολυμπιακό"}, "score_at": {"word": "συνολικό"},
-     "roll_at": {"word": "τρία"}, "roll_end": {"word": "ένα", "edge": "end"},
-     "label": "ΣΥΝΟΛΙΚΟ ΣΚΟΡ", "sub": "3ος προκριματικός · Champions League 2008/09"},
-    {"type": "fact", "crest_at": 0.0,
-     "words": [{"text": "ΠΡΩΤΗ", "color": "white", "max_size": 300, "at": {"word": "πρώτη"}},
-               {"text": "ΚΥΠΡΙΑΚΗ ΟΜΑΔΑ", "color": "yellow", "at": {"word": "κυπριακή"}},
-               {"text": "ΣΤΟΥΣ ΟΜΙΛΟΥΣ", "color": "green", "at": {"word": "στους"}},
-               {"text": "ΤΟΥ CHAMPIONS LEAGUE", "color": "white", "max_size": 84, "at": {"word": "τσάμπιονς"}}],
-     "mascot_at": {"word": "μπαίνει"}, "confetti_at": {"word": "ομίλους"}}
+    {
+      "type": "date",
+      "day": "27",
+      "month": "ΑΥΓΟΥΣΤΟΥ",
+      "year": "2008",
+      "day_at": {
+        "word": "είκοσι"
+      },
+      "month_at": {
+        "word": "αυγούστου"
+      },
+      "year_at": {
+        "word": "δύο"
+      },
+      "year_end": {
+        "word": "οκτώ",
+        "edge": "end"
+      }
+    },
+    {
+      "type": "score",
+      "home": "ΑΝΟΡΘΩΣΗ",
+      "away": "ΟΛΥΜΠΙΑΚΟΣ",
+      "away_color": [
+        196,
+        22,
+        44
+      ],
+      "score": [
+        3,
+        1
+      ],
+      "home_at": {
+        "word": "ανόρθωση"
+      },
+      "away_at": {
+        "word": "ολυμπιακό"
+      },
+      "score_at": {
+        "word": "συνολικό"
+      },
+      "roll_at": {
+        "word": "τρία"
+      },
+      "roll_end": {
+        "word": "ένα",
+        "edge": "end"
+      },
+      "label": "ΣΥΝΟΛΙΚΟ ΣΚΟΡ",
+      "sub": "3ος προκριματικός · Champions League 2008/09"
+    },
+    {
+      "type": "fact",
+      "crest_at": 0.0,
+      "words": [
+        {
+          "text": "ΠΡΩΤΗ",
+          "color": "white",
+          "max_size": 300,
+          "at": {
+            "word": "πρώτη"
+          }
+        },
+        {
+          "text": "ΚΥΠΡΙΑΚΗ ΟΜΑΔΑ",
+          "color": "yellow",
+          "at": {
+            "word": "κυπριακή"
+          }
+        },
+        {
+          "text": "ΣΤΟΥΣ ΟΜΙΛΟΥΣ",
+          "color": "green",
+          "at": {
+            "word": "στους"
+          }
+        },
+        {
+          "text": "ΤΟΥ CHAMPIONS LEAGUE",
+          "color": "white",
+          "max_size": 84,
+          "at": {
+            "word": "τσάμπιονς"
+          }
+        }
+      ],
+      "mascot_at": {
+        "word": "ομάδα"
+      },
+      "confetti_at": {
+        "word": "ιστορικό"
+      },
+      "stamp": {
+        "text": "ΙΣΤΟΡΙΚΟ!",
+        "at": {
+          "word": "ιστορικό"
+        }
+      }
+    }
   ]
 }
