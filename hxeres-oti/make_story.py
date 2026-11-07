@@ -748,7 +748,8 @@ class Story:
 
     def build_stats(self, sc, line, T):
         """Photo card + a row of stat boxes whose numbers roll in on the spoken words (19 / 7 / 0)."""
-        card = self.photo_card(sc.get('card_width', 980), sc.get('card_max_h', 520), self.load_photo(sc.get('photo')))
+        card = None if sc.get('no_card') else self.photo_card(sc.get('card_width', 980), sc.get('card_max_h', 520),
+                                                              self.load_photo(sc.get('photo')))
         tP = T + 0.12
         pill = self.pill_img(sc['pill']) if sc.get('pill') else None
         tPl = self.at(line, sc.get('pill_at', 0.2)) if pill is not None else None
@@ -789,7 +790,8 @@ class Story:
         Yc, Ypill, Yb = 690, 1002, 1162
 
         def draw(fr, t):
-            self.draw_card(fr, card, t, tP, XC, Yc)
+            if card is not None:
+                self.draw_card(fr, card, t, tP, XC, Yc)
             if tPl is not None and t > tPl:
                 v = t - tPl
                 place(fr, pill, XC, Ypill, 0.6 + 0.4 * ease_out_back(v / 0.35, 2.0), min(1, v / 0.12))

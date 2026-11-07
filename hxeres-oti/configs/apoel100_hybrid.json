@@ -1,0 +1,353 @@
+{
+  "voice": "el-GR-NestorasNeural",
+  "rate": "+10%",
+  "pitch": "+0Hz",
+  "voice_fx": false,
+  "max_pause": null,
+  "tail": 0.6,
+  "hook": {
+    "text": "Ήξερες ότι ο ΑΠΟΕΛ κλείνει εκατό χρόνια ιστορίας;",
+    "question_start": 0.62,
+    "question_stretch": 1.7,
+    "question_semitones": 7.5
+  },
+  "lines": [
+    "Ιδρύθηκε στις οκτώ Νοεμβρίου του χίλια εννιακόσια είκοσι έξι, στη Λευκωσία.",
+    "Από τότε, μάζεψε είκοσι εννιά πρωταθλήματα, είκοσι ένα κύπελλα, και δεκαπέντε σούπερ καπ!",
+    "Πήρε επτά πρωταθλήματα στη σειρά, από το δύο χιλιάδες δεκατρία μέχρι το δύο χιλιάδες δεκαεννιά!",
+    "Και το δύο χιλιάδες δώδεκα, έγινε η πρώτη κυπριακή ομάδα στους οκτώ του Τσάμπιονς Λιγκ!",
+    "Για τα εκατό του χρόνια, το Δημαρχείο της Λευκωσίας φωταγωγήθηκε μπλε και κίτρινο!",
+    "Εκατό χρόνια ΑΠΟΕΛ. Χρόνια πολλά, Θρύλε!"
+  ],
+  "cta": "Ποια είναι η αγαπημένη σου στιγμή του ΑΠΟΕΛ; Γράψ' τη στα σχόλια, και κάνε φόλοου στο Κουπονάκι!",
+  "theme": "hybrid",
+  "photo": "posts/apoel100_flags.jpg",
+  "team": {
+    "name": "ΑΠΟΕΛ",
+    "color": [
+      30,
+      80,
+      190
+    ],
+    "crest": "assets/apoel_crest.png",
+    "mascot": "assets/apoel_mascot.png"
+  },
+  "caption_case": "as_is",
+  "cta_badge": "ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ",
+  "hook_photo": "posts/apoel100_flags.jpg",
+  "hook_focus": [
+    0.5,
+    0.45
+  ],
+  "hook_replace": {
+    "εκατό": "100"
+  },
+  "hook_accent": [
+    "100",
+    "ιστορίας"
+  ],
+  "emoji": {
+    "ιστορίας": "💙💛",
+    "λευκωσία": "📍",
+    "κύπελλα": "🏆",
+    "σειρά": "🔥",
+    "λιγκ": "⭐",
+    "κίτρινο": "💙💛",
+    "σχόλια": "👇"
+  },
+  "caption_replace": {
+    "χίλια εννιακόσια είκοσι έξι": "1926",
+    "οκτώ Νοεμβρίου": "8 Νοεμβρίου",
+    "είκοσι εννιά": "29",
+    "είκοσι ένα": "21",
+    "δεκαπέντε": "15",
+    "επτά": "7",
+    "δύο χιλιάδες δεκατρία": "2013",
+    "δύο χιλιάδες δεκαεννιά": "2019",
+    "δύο χιλιάδες δώδεκα": "2012",
+    "οκτώ": "8",
+    "Τσάμπιονς Λιγκ": "Champions League",
+    "εκατό": "100",
+    "φόλοου": "follow",
+    "Κουπονάκι": "Kouponaki"
+  },
+  "scenes": [
+    {
+      "type": "date",
+      "backdrop": "posts/apoel100_history.jpg",
+      "label": "ΛΕΥΚΩΣΙΑ · Η ΙΔΡΥΣΗ",
+      "day": "8",
+      "month": "Νοεμβρίου",
+      "year": "1926",
+      "day_at": {
+        "word": "οκτώ"
+      },
+      "month_at": {
+        "word": "νοεμβρίου"
+      },
+      "year_at": {
+        "word": "χίλια"
+      },
+      "year_end": {
+        "word": "έξι",
+        "edge": "end"
+      },
+      "photo_card": "posts/apoel100_poulias_sepia.jpg",
+      "photo_at": {
+        "word": "ιδρύθηκε"
+      },
+      "photo_x": 790,
+      "photo_y": 830,
+      "photo_rot": 6,
+      "photo_width": 320
+    },
+    {
+      "type": "stats",
+      "backdrop": "posts/apoel100_title_party.jpg",
+      "photo": "posts/apoel100_trophy.jpg",
+      "pill": "ΡΕΚΟΡ ΤΙΤΛΩΝ ΣΤΗΝ ΚΥΠΡΟ",
+      "pill_at": {
+        "word": "μάζεψε"
+      },
+      "items": [
+        {
+          "value": 29,
+          "label": "ΠΡΩΤΑΘΛΗΜΑΤΑ",
+          "color": "lime",
+          "hero": true,
+          "at": {
+            "word": "εννιά"
+          }
+        },
+        {
+          "value": 21,
+          "label": "ΚΥΠΕΛΛΑ",
+          "color": "yellow",
+          "at": {
+            "word": "ένα"
+          }
+        },
+        {
+          "value": 15,
+          "label": "ΣΟΥΠΕΡ ΚΑΠ",
+          "color": "white",
+          "at": {
+            "word": "δεκαπέντε"
+          }
+        }
+      ],
+      "focus": [
+        0.5,
+        0.38
+      ],
+      "ph": 980
+    },
+    {
+      "type": "streak",
+      "backdrop": "posts/apoel100_trophy2.jpg",
+      "seasons": [
+        "2012–13",
+        "2013–14",
+        "2014–15",
+        "2015–16",
+        "2016–17",
+        "2017–18",
+        "2018–19"
+      ],
+      "start_at": {
+        "word": "δύο"
+      },
+      "end_at": {
+        "word": "δεκαεννιά"
+      },
+      "stamp": {
+        "text": "ΡΕΚΟΡ!",
+        "at": {
+          "word": "δεκαεννιά",
+          "edge": "end"
+        },
+        "x": 836,
+        "y": 548,
+        "max_w": 300,
+        "max_size": 110,
+        "rotate": 10
+      },
+      "photo": "posts/apoel100_trophy2.jpg",
+      "focus": [
+        0.5,
+        0.35
+      ],
+      "ph": 840
+    },
+    {
+      "type": "gallery",
+      "label": {
+        "text": "UEFA CHAMPIONS LEAGUE · 07.03.2012",
+        "at": {
+          "word": "δώδεκα"
+        }
+      },
+      "photos": [
+        {
+          "photo": "posts/apoel100_gsp_lyon.jpg",
+          "at": 0.0,
+          "focus": [
+            0.5,
+            0.45
+          ]
+        },
+        {
+          "photo": "posts/apoel100_chiotis_save.jpg",
+          "at": {
+            "word": "έγινε"
+          },
+          "focus": [
+            0.45,
+            0.5
+          ]
+        },
+        {
+          "photo": "posts/apoel100_chiotis.jpg",
+          "at": {
+            "word": "ομάδα"
+          },
+          "focus": [
+            0.5,
+            0.35
+          ]
+        }
+      ],
+      "stickers": [
+        {
+          "text": "ΣΤΟΥΣ 8 ΤΗΣ ΕΥΡΩΠΗΣ!",
+          "at": {
+            "word": "οκτώ"
+          },
+          "x": 515,
+          "y": 1150,
+          "rotate": -4,
+          "max_size": 118
+        }
+      ],
+      "emoji_sticker": {
+        "emoji": "⭐",
+        "at": {
+          "word": "λιγκ"
+        },
+        "x": 905,
+        "y": 1060,
+        "size": 130,
+        "rot": 14
+      }
+    },
+    {
+      "type": "gallery",
+      "label": {
+        "text": "ΔΗΜΑΡΧΕΙΟ ΛΕΥΚΩΣΙΑΣ · 2026",
+        "at": {
+          "word": "δημαρχείο"
+        }
+      },
+      "photos": [
+        {
+          "photo": "posts/apoel100_lights.jpg",
+          "at": 0.0,
+          "focus": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "photo": "posts/apoel100_tifo.jpg",
+          "at": {
+            "word": "μπλε"
+          },
+          "focus": [
+            0.45,
+            0.55
+          ]
+        }
+      ],
+      "stickers": [
+        {
+          "text": "ΕΝΑΣ ΑΙΩΝΑΣ!",
+          "at": {
+            "word": "κίτρινο"
+          },
+          "x": 515,
+          "y": 1150,
+          "rotate": -4,
+          "max_size": 130
+        }
+      ],
+      "emoji_sticker": {
+        "emoji": "💙💛",
+        "at": {
+          "word": "μπλε"
+        },
+        "x": 880,
+        "y": 1040,
+        "size": 110,
+        "rot": 10
+      }
+    },
+    {
+      "type": "fact",
+      "photo": "posts/apoel100_gsp_lyon_wide.jpg",
+      "captions": false,
+      "words_style": "chunky",
+      "crest_y": 590,
+      "y": 770,
+      "words": [
+        {
+          "text": "100 ΧΡΟΝΙΑ",
+          "color": "white",
+          "max_size": 200,
+          "at": {
+            "word": "εκατό"
+          }
+        },
+        {
+          "text": "ΑΠΟΕΛ",
+          "color": "yellow",
+          "max_size": 220,
+          "at": {
+            "word": "αποελ"
+          }
+        },
+        {
+          "text": "1926–2026",
+          "color": "white",
+          "max_size": 92,
+          "at": {
+            "word": "χρόνια",
+            "nth": 1
+          }
+        }
+      ],
+      "mascot_at": {
+        "word": "εκατό",
+        "offset": 0.3
+      },
+      "confetti_at": {
+        "word": "πολλά"
+      },
+      "stamp": {
+        "text": "ΧΡΟΝΙΑ ΠΟΛΛΑ!",
+        "at": {
+          "word": "θρύλε"
+        },
+        "x": 800,
+        "y": 640,
+        "rotate": 12
+      }
+    }
+  ],
+  "end": {
+    "photo": "posts/apoel100_flags.jpg",
+    "lines": [
+      "Ποια είναι η αγαπημένη",
+      "σου στιγμή του ΑΠΟΕΛ;"
+    ]
+  }
+}

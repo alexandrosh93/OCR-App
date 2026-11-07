@@ -17,8 +17,8 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageChops
 from make_video import (HERE, W, H, FPS, ease, ease_out, ease_out_back, with_alpha, place, glow_of, fnt, Intro,
                         calendar_icon, LIME, sfx_ding, sfx_boom)
-from make_story import (fit_text, plain_text, emoji_img, tile_parts, odometer_strip, digit_tile, roll, step_value,
-                        shade, sfx_confetti, XC, YELLOW, STICKER_Y, STICKER_S, LOGO_Y)
+from make_story import (Story, fit_text, plain_text, emoji_img, tile_parts, odometer_strip, digit_tile, roll, step_value,
+                        shade, norm, sfx_confetti, XC, YELLOW, TEXT_W, STICKER_Y, STICKER_S, LOGO_Y)
 from make_modern import Modern, Photo, F, text_img, reveal, expo, shadowed, BG, WHITE, MUTED, ACC, INK, M, TR
 
 
@@ -51,12 +51,13 @@ class Hybrid(Modern):
         self.fly0, self.fly_end = split, split + 0.45      # sticker pops out: it must not cover the photos
         size = cfg.get('hook_size', 122)
         f, tr, sp = F('Black', size), -int(size * 0.025), int(size * 0.26)
-        acc = {w.lower() for w in cfg.get('hook_accent', [])}
-        from make_story import norm
         acc = {norm(w) for w in cfg.get('hook_accent', [])}
+        hrep = {norm(k): v for k, v in cfg.get('hook_replace', {}).items()}
         lines, cur, cw, pad = [], [], 0, 24
         for w, t0, t1, n in rest:
-            im, pad = shadowed(text_img(w, f, ACC if n in acc else WHITE, tracking=tr))
+            if n in hrep:
+                w = hrep[n] + ''.join(ch for ch in w if ch in ',.;:!?·…')
+            im, pad = shadowed(text_img(w, f, ACC if (n in acc or norm(w) in acc) else WHITE, tracking=tr))
             if cur and cw + sp + im.width - 2 * pad > W - 2 * M:
                 lines.append(cur)
                 cur, cw = [], 0
@@ -114,12 +115,20 @@ class Hybrid(Modern):
         for r in rolls:
             self.add_ticks(lambda tt, r=r: roll(tt, r['target'], r['t0'], r['t1'], r['spins']), r['t0'], r['t1'])
         self.events += [(tD, 'thud'), (tM, 'pop'), (tY0 - 0.35, 'pop')]
+        pc = None
+        if sc.get('photo_card'):                          # polaroid of the current style (e.g. the founder)
+            pc = self.photo_card(sc.get('photo_width', 300), sc.get('photo_max_h', 300), self.load_photo(sc['photo_card']))
+            tPh = self.at(line, sc.get('photo_at', 0.0))
+            pxy = (sc.get('photo_x', 790), sc.get('photo_y', 840), sc.get('photo_rot', 6))
+            self.events.append((tPh, 'whoosh'))
 
         def draw(fr, t):
             if P:
                 self.photo_bg(fr, P, (t - T) / max(T1 - T, 0.1))
             else:
                 fr.paste(plate, (0, 0))
+            if pc is not None:
+                self.draw_card(fr, pc, t, tPh, pxy[0], pxy[1], rot_end=pxy[2])
             u = t - (tD - 0.3)
             if u > 0:
                 place(fr, icon, M + icon.width / 2, iy + icon.height / 2, ease_out_back(u / 0.4, 2.0), min(1, u / 0.15))
@@ -224,12 +233,18 @@ class Hybrid(Modern):
         Yc = sc.get('crest_y', 590)
         tC = self.at(line, sc.get('crest_at', 0.0))
         size = sc.get('size', 110)
+        chunky = sc.get('words_style') == 'chunky'
         lines, y = [], sc.get('y', 810)
         for wd in sc['words']:
-            col = ACC if wd.get('color') in ('acc', 'green', 'yellow') else WHITE
-            im = text_img(wd['text'], F('Black', size), col, tracking=-int(size * 0.03))
-            lines.append((im, self.at(line, wd['at']), y))
-            y += int(size * 1.02)
+            if chunky:                                    # template-1 headline stickers
+                im = fit_text(wd['text'], wd.get('color', 'white'), TEXT_W, wd.get('max_size', 160))
+                lines.append((im, self.at(line, wd['at']), y))
+                y += im.height - 18
+            else:
+                col = ACC if wd.get('color') in ('acc', 'green', 'yellow') else WHITE
+                im = text_img(wd['text'], F('Black', size), col, tracking=-int(size * 0.03))
+                lines.append((im, self.at(line, wd['at']), y))
+                y += int(size * 1.02)
         mascot, tMa = None, None
         if self.team.get('mascot'):
             m = Image.open(os.path.join(HERE, self.team['mascot'])).convert('RGBA')
@@ -310,7 +325,12 @@ class Hybrid(Modern):
                     d.polygon([(x + ca * dx - sa * dy, y + sa * dx + ca * dy) for dx, dy in ((-hw, -hh), (hw, -hh), (hw, hh), (-hw, hh))],
                               fill=shade(p['c'], 0.55 + 0.45 * f) + (255,))
             for im, ta, yy in lines:
-                reveal(fr, im, M - 4, yy, (t - (ta - 0.05)) / 0.55)
+                if chunky:
+                    u = t - ta
+                    if u > 0:
+                        place(fr, im, XC, yy + im.height / 2, 1 + 0.65 * (1 - ease_out(u / 0.2, 3)), min(1, u / 0.08))
+                else:
+                    reveal(fr, im, M - 4, yy, (t - (ta - 0.05)) / 0.55)
             if stamp is not None and t > stamp['t']:
                 v = t - stamp['t']
                 k = 1 + 1.4 * (1 - ease_out(v / 0.18, 3))
@@ -321,6 +341,50 @@ class Hybrid(Modern):
                 e = ease_out_back(v / 0.55, 1.5)
                 place(fr, mascot, XC - 330 - 420 * (1 - e), Yc + 40 + 260 * (1 - e) + 10 * math.sin(2 * math.pi * 1.1 * v),
                       1, min(1, v / 0.2), rot=-16 * (1 - e) + 3 * math.sin(3.4 * v))
+        return draw
+
+    # ---------------------------------------------------------------- stats / streak from template 1 on big photos
+    def m_stats(self, sc, line, T):
+        T1 = self.seg_end(line)
+        P = Photo(self.load_photo(sc['photo']), sc.get('ph', 980), tuple(sc.get('focus', (0.5, 0.42))))
+        inner = Story.build_stats(self, dict(sc, no_card=True), line, T)
+
+        def draw(fr, t):
+            self.photo_bg(fr, P, (t - T) / max(T1 - T, 0.1))
+            inner(fr, t)
+        return draw
+
+    def m_streak(self, sc, line, T):
+        T1 = self.seg_end(line)
+        P = Photo(self.load_photo(sc['photo']), sc.get('ph', 840), tuple(sc.get('focus', (0.5, 0.4)))) if sc.get('photo') else None
+        plate = None if P else self.dark_plate(sc.get('backdrop'), 0.2)
+        inner = Story.build_streak(self, sc, line, T)
+
+        def draw(fr, t):
+            if P:
+                self.photo_bg(fr, P, (t - T) / max(T1 - T, 0.1))
+            else:
+                fr.paste(plate, (0, 0))
+            inner(fr, t)
+        return draw
+
+    def m_gallery(self, sc, line, T):
+        base = super().m_gallery(sc, line, T)
+        stks = []                                         # chunky stickers of template 1
+        for st in ([sc['sticker']] if sc.get('sticker') else []) + sc.get('stickers', []):
+            simg = fit_text(st['text'], st.get('color', 'yellow'), st.get('max_w', 760), st.get('max_size', 120))
+            stks.append(dict(im=simg, glow=glow_of(simg, 18, LIME)[0], t=self.at(line, st['at']),
+                             x=st.get('x', XC), y=st.get('y', 1160), rot=st.get('rotate', -4)))
+            self.events.append((stks[-1]['t'], 'thud'))
+
+        def draw(fr, t):
+            base(fr, t)
+            for stk in stks:
+                if t > stk['t']:
+                    v = t - stk['t']
+                    k = 1 + 1.3 * (1 - ease_out(v / 0.18, 3))
+                    place(fr, stk['glow'], stk['x'], stk['y'], k, 0.8 * min(1, v / 0.1), rot=stk['rot'])
+                    place(fr, stk['im'], stk['x'], stk['y'], k, min(1, v / 0.06), rot=stk['rot'])
         return draw
 
     # ---------------------------------------------------------------- end card: sticker + logo + comment badge
