@@ -671,6 +671,12 @@ class Story:
             x += w + gap
         self.events += [(tD, 'thud'), (tY0 - 0.35, 'pop')] + ([(tM, 'pop')] if tM is not None else [])
         self.shakes.append((tD, 14))
+        pcard = None                                       # optional polaroid, e.g. the founder's portrait
+        if sc.get('photo'):
+            pcard = self.photo_card(sc.get('photo_width', 300), sc.get('photo_max_h', 300), self.load_photo(sc['photo']))
+            tPh = self.at(line, sc.get('photo_at', 0.0))
+            pxy = (sc.get('photo_x', XC + 300), sc.get('photo_y', 600), sc.get('photo_rot', 6))
+            self.events.append((tPh, 'whoosh'))
         for r in items:
             if r['digit']:
                 self.add_ticks(lambda tt, r=r: roll(tt, r['target'], r['t0'], r['t1'], r['spins']), r['t0'], r['t1'])
@@ -678,6 +684,8 @@ class Story:
         Yy = 1140 if month is not None else 950
 
         def draw(fr, t):
+            if pcard is not None:
+                self.draw_card(fr, pcard, t, tPh, pxy[0], pxy[1], rot_end=pxy[2])
             u = t - (tD - 0.25)
             if u > 0:
                 place(fr, icon, XC, Yi, ease_out_back(u / 0.4, 2.0), min(1, u / 0.15))

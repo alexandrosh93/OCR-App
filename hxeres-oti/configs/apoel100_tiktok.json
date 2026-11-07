@@ -1,5 +1,5 @@
 {
-  "photo": "posts/apoel100_fans.jpg",
+  "photo": "posts/apoel100_flags.jpg",
   "team": {
     "name": "ΑΠΟΕΛ",
     "color": [
@@ -61,7 +61,7 @@
   "scenes": [
     {
       "type": "date",
-      "backdrop": "posts/apoel100_crestwall.jpg",
+      "backdrop": "posts/apoel100_history.jpg",
       "day": "8",
       "month": "ΝΟΕΜΒΡΙΟΥ",
       "year": "1926",
@@ -77,12 +77,20 @@
       "year_end": {
         "word": "έξι",
         "edge": "end"
-      }
+      },
+      "photo": "posts/apoel100_poulias_sepia.jpg",
+      "photo_at": {
+        "word": "ιδρύθηκε"
+      },
+      "photo_x": 818,
+      "photo_y": 610,
+      "photo_rot": 6,
+      "photo_width": 290
     },
     {
       "type": "stats",
-      "backdrop": "posts/apoel100_fans.jpg",
-      "photo": "posts/apoel_team.jpg",
+      "backdrop": "posts/apoel100_title_party.jpg",
+      "photo": "posts/apoel100_trophy.jpg",
       "pill": "ΡΕΚΟΡ ΤΙΤΛΩΝ ΣΤΗΝ ΚΥΠΡΟ",
       "pill_at": {
         "word": "μάζεψε"
@@ -117,7 +125,7 @@
     },
     {
       "type": "streak",
-      "backdrop": "posts/apoel_team.jpg",
+      "backdrop": "posts/apoel100_trophy2.jpg",
       "seasons": [
         "2012–13",
         "2013–14",
@@ -148,18 +156,24 @@
     },
     {
       "type": "gallery",
-      "backdrop": "posts/apoel_penalty.jpg",
+      "backdrop": "posts/apoel100_gsp_lyon_wide.jpg",
       "photos": [
         {
-          "photo": "posts/apoel_penalty.jpg",
+          "photo": "posts/apoel100_gsp_lyon.jpg",
           "at": {
             "word": "δώδεκα"
           }
         },
         {
-          "photo": "posts/apoel_goal.jpg",
+          "photo": "posts/apoel100_chiotis_save.jpg",
           "at": {
-            "word": "πρώτη"
+            "word": "έγινε"
+          }
+        },
+        {
+          "photo": "posts/apoel100_chiotis.jpg",
+          "at": {
+            "word": "ομάδα"
           }
         }
       ],
@@ -185,7 +199,7 @@
           }
         },
         {
-          "photo": "posts/apoel100_fans.jpg",
+          "photo": "posts/apoel100_tifo.jpg",
           "at": {
             "word": "μπλε"
           }
@@ -203,7 +217,7 @@
     },
     {
       "type": "fact",
-      "backdrop": "posts/apoel100_aionas.jpg",
+      "backdrop": "posts/apoel100_flags.jpg",
       "crest_at": 0.0,
       "words": [
         {
