@@ -1,0 +1,41 @@
+{
+  "photo": "posts/apollon_fans.jpg",
+  "team": {"name": "ΑΠΟΛΛΩΝΑΣ", "color": [30, 90, 200],
+           "crest": "assets/apollon_crest.png", "mascot": "assets/apollon_mascot.png"},
+  "voice": "el-GR-NestorasNeural", "rate": "+10%", "pitch": "+0Hz", "voice_fx": false, "max_pause": null, "tail": 0.6,
+  "hook": {"text": "Ήξερες ότι ο Απόλλωνας έγραψε ιστορία στη Βαρσοβία;", "question_start": 0.68},
+  "lines": [
+    "Πάμε πίσω, στις τρεις Οκτωβρίου του δύο χιλιάδες δεκατρία.",
+    "Ο Απόλλωνας ταξίδεψε στην Πολωνία, για τους ομίλους του Γιουρόπα Λιγκ, κόντρα στη Λέγκια!",
+    "Ο Γκαστόν Σανγκόι είχε χάσει πέναλτι, αλλά στο πενήντα έξι, πήρε την εκδίκησή του!",
+    "Και ο Απόλλωνας έγινε η πρώτη κυπριακή ομάδα που κέρδισε εκτός έδρας, σε όμιλο ευρωπαϊκής διοργάνωσης!"
+  ],
+  "cta": "Ποια άλλη ιστορική στιγμή θες να δούμε; Γράψ' τη στα σχόλια, και κάνε φόλοου στο Κουπονάκι!",
+  "cta_badge": "ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ",
+  "emoji": {"βαρσοβία": "🇵🇱", "πολωνία": "✈️", "πέναλτι": "😬", "εκδίκησή": "🔥", "διοργάνωσης": "🏆", "σχόλια": "👇"},
+  "caption_replace": {"τρεις Οκτωβρίου": "3 ΟΚΤΩΒΡΙΟΥ", "δύο χιλιάδες δεκατρία": "2013", "Γιουρόπα Λιγκ": "EUROPA LEAGUE",
+                      "πενήντα έξι": "56'", "Σανγκόι": "ΣΑΝΓΚΟΪ", "φόλοου": "FOLLOW", "Κουπονάκι": "KOUPONAKI"},
+  "scenes": [
+    {"type": "date", "backdrop": "posts/apollon_fans.jpg", "day": "3", "month": "ΟΚΤΩΒΡΙΟΥ", "year": "2013",
+     "day_at": {"word": "τρεις"}, "month_at": {"word": "οκτωβρίου"},
+     "year_at": {"word": "δύο"}, "year_end": {"word": "δεκατρία", "edge": "end"}},
+    {"type": "trip", "backdrop": "posts/apollon_sangoy.jpg",
+     "from": {"name": "ΛΕΜΕΣΟΣ", "flag": "🇨🇾"}, "to": {"name": "ΒΑΡΣΟΒΙΑ", "flag": "🇵🇱"},
+     "fly_at": {"word": "ταξίδεψε"}, "land_at": {"word": "πολωνία", "edge": "end"},
+     "pill": "UEFA EUROPA LEAGUE · ΦΑΣΗ ΟΜΙΛΩΝ", "pill_at": {"word": "ομίλους"},
+     "sticker": {"text": "VS ΛΕΓΚΙΑ", "at": {"word": "λέγκια"}, "x": 640, "y": 900, "rotate": -8}},
+    {"type": "score", "backdrop": "posts/apollon_sangoy.jpg", "photo": "posts/apollon_sangoy.jpg", "card_width": 660,
+     "home": "ΛΕΓΚΙΑ", "home_color": [0, 120, 70], "home_crest": null,
+     "away": "ΑΠΟΛΛΩΝ", "away_color": [30, 90, 200], "away_crest": "assets/apollon_crest.png",
+     "home_at": {"word": "γκαστόν"}, "away_at": {"word": "γκαστόν", "offset": 0.2}, "score_at": {"word": "σανγκόι"},
+     "steps": [{"value": [0, 0], "at": {"word": "σανγκόι"}, "label": "ΣΤΗ ΒΑΡΣΟΒΙΑ"},
+               {"value": [0, 1], "at": {"word": "εκδίκησή"}, "label": "ΤΕΛΙΚΟ"}],
+     "badge": {"text": "ΣΑΝΓΚΟΪ 56'", "at": {"word": "πενήντα"}, "x": 760, "y": 520, "rotate": 9}},
+    {"type": "fact", "backdrop": "posts/apollon_lockerroom.jpg", "crest_at": 0.0,
+     "words": [{"text": "ΠΡΩΤΗ ΚΥΠΡΙΑΚΗ", "color": "white", "max_size": 150, "at": {"word": "πρώτη"}},
+               {"text": "ΕΚΤΟΣ ΕΔΡΑΣ ΝΙΚΗ", "color": "yellow", "max_size": 140, "at": {"word": "εκτός"}},
+               {"text": "ΣΕ ΟΜΙΛΟ ΕΥΡΩΠΗΣ", "color": "green", "max_size": 140, "at": {"word": "όμιλο"}}],
+     "mascot_at": {"word": "έγινε"}, "confetti_at": {"word": "όμιλο"},
+     "stamp": {"text": "ΙΣΤΟΡΙΚΟ!", "at": {"word": "διοργάνωσης", "edge": "end"}}}
+  ]
+}

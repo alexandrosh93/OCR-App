@@ -337,7 +337,7 @@ class Story:
         # questions get a real rising end (TTS reads them almost flat); "question": false turns it off
         qs = cfg.get('question_semitones', 6.0)
         def ask(a, w, l):
-            y = question_rise(a, w, l.get('question_semitones', qs))
+            y = question_rise(a, w, l.get('question_semitones', qs), start=l.get('question_start', 0.5))
             extra = (len(y) - len(a)) / SR
             return y, (w[:-1] + [[w[-1][0], w[-1][1], w[-1][2] + extra]] if w else w)
         raw = [ask(a, w, l) if l.get('question', is_question(l['text'])) else (a, w) for (a, w), l in zip(raw, lines)]
@@ -939,8 +939,12 @@ class Story:
         return im
 
     def build_score(self, sc, line, T):
-        crest = Image.open(os.path.join(HERE, self.team['crest'])).convert('RGBA')
-        card = self.photo_card(800, 600, self.load_photo(sc.get('photo')))
+        def crest_of(key, default):
+            path = sc.get(key, default)
+            return Image.open(os.path.join(HERE, path)).convert('RGBA') if path else None
+        crest = crest_of('home_crest', self.team['crest'])            # left plate (home side)
+        crest_away = crest_of('away_crest', None)                     # right plate, e.g. our team playing away
+        card = self.photo_card(sc.get('card_width', 800), 600, self.load_photo(sc.get('photo')))
         tP = T + 0.12
         tHo, tAw, tBox = self.at(line, sc['home_at']), self.at(line, sc['away_at']), self.at(line, sc['score_at'])
         card2 = self.photo_card(330, 220, self.load_photo(sc['photo2'])) if sc.get('photo2') else None   # polaroid
@@ -962,7 +966,7 @@ class Story:
             steps = [dict(value=sc['score'], t=self.at(line, sc['roll_at']), label=sc.get('label', 'ΣΥΝΟΛΙΚΟ ΣΚΟΡ'),
                           t_label=self.at(line, sc['roll_at']))]
         home = self.plate(sc['home'], tuple(sc.get('home_color', self.tcol)), crest)
-        away = self.plate(sc['away'], tuple(sc.get('away_color', (90, 90, 100))), None, mirror=True)
+        away = self.plate(sc['away'], tuple(sc.get('away_color', (90, 90, 100))), crest_away, mirror=True)
         bw, bh = 230, 160
         box = Image.new('RGBA', (bw + 60, bh + 60), (0, 0, 0, 0))
         gl = Image.new('RGBA', box.size, (0, 0, 0, 0))
@@ -1022,6 +1026,94 @@ class Story:
                     v = t - tl
                     q = ease_out_back(v / 0.35, 2.0)
                     place(fr, pill, XC, Ys + 125, 0.6 + 0.4 * q, min(1, v / 0.15))
+        return draw
+
+    # ---------------------------------------------------------------- scene: trip
+    def build_trip(self, sc, line, T):
+        """Away trip: pins for the two cities, a dashed flight path drawing itself and a ✈️ flying along it."""
+        A, B = sc['from'], sc['to']
+        pA, pB = (XC - 255, 1120), (XC + 245, 660)
+        pC = (XC - 300, 600)                                     # control point: the path bulges up-left
+        t0, t1 = self.at(line, sc['fly_at']), self.at(line, sc['land_at'])
+        plane = emoji_img('✈️', 140)
+        pin = emoji_img('📍', 120)
+
+        def label(city):
+            txt = plain_text(city['name'], fnt('FiraSansExtraCondensed-Black', 64), stroke=3)
+            fl = emoji_img(city['flag'], 58) if city.get('flag') else None
+            w = txt.width + 52 + (fl.width + 14 if fl else 0)
+            im = Image.new('RGBA', (w, 96), (0, 0, 0, 0))
+            ImageDraw.Draw(im).rounded_rectangle((0, 0, w - 1, 95), 26, fill=(8, 20, 36, 240), outline=LIME + (255,), width=4)
+            x = 26
+            if fl:
+                im.alpha_composite(fl, (x, int(48 - fl.height / 2)))
+                x += fl.width + 14
+            im.alpha_composite(txt, (x, int(48 - txt.height / 2)))
+            return im
+        labA, labB = label(A), label(B)
+        gA, gB = glow_of(labA, 14, LIME)[0], glow_of(labB, 14, LIME)[0]
+
+        def bez(u):
+            x = (1 - u) ** 2 * pA[0] + 2 * (1 - u) * u * pC[0] + u ** 2 * pB[0]
+            y = (1 - u) ** 2 * pA[1] + 2 * (1 - u) * u * pC[1] + u ** 2 * pB[1]
+            return x, y
+        pill = self.pill_img(sc['pill'], 38) if sc.get('pill') else None
+        tPl = self.at(line, sc.get('pill_at', 0.3)) if pill is not None else None
+        stk = None
+        if sc.get('sticker'):
+            st = sc['sticker']
+            simg = fit_text(st['text'], st.get('color', 'yellow'), st.get('max_w', 420), st.get('max_size', 100))
+            stk = dict(im=simg, glow=glow_of(simg, 18, LIME)[0], t=self.at(line, st['at']),
+                       x=st.get('x', XC + 120), y=st.get('y', 900), rot=st.get('rotate', -8))
+            self.events.append((stk['t'], 'thud'))
+            self.shakes.append((stk['t'], 12))
+        self.events += [(T + 0.15, 'pop'), (t0, 'whoosh'), (t1, 'thud'), (t1 + 0.05, 'pop')]
+        if tPl is not None:
+            self.events.append((tPl, 'pop'))
+        self.shakes.append((t1, 10))
+
+        def draw(fr, t):
+            if pill is not None and t > tPl:
+                v = t - tPl
+                place(fr, pill, XC, 470, 0.6 + 0.4 * ease_out_back(v / 0.35, 2.0), min(1, v / 0.12))
+            u = t - (T + 0.15)
+            if u > 0:                                           # origin pin + label
+                k = ease_out_back(u / 0.4, 2.0)
+                place(fr, pin, pA[0], pA[1] - 50, k, min(1, u / 0.1))
+                place(fr, gA, pA[0], pA[1] + 70, k, 0.6)
+                place(fr, labA, pA[0], pA[1] + 70, k, min(1, u / 0.1))
+            q = 0.07 + 0.93 * ease(min(1, max(0, (t - t0) / max(t1 - t0, 0.3))))   # plane starts clear of the pin
+            if t > t0:                                          # dashed path drawn up to the plane
+                d = ImageDraw.Draw(fr)
+                n = 60
+                for i in range(n):
+                    a0, a1 = i / n, (i + 0.55) / n
+                    if a0 > q:
+                        break
+                    (x0, y0), (x1, y1) = bez(a0), bez(min(a1, q))
+                    d.line((x0, y0, x1, y1), fill=(255, 255, 255, 230), width=7)
+                if q < 1 or t - t1 < 0.25:
+                    x, y = bez(q)
+                    dx, dy = (lambda a, b: (b[0] - a[0], b[1] - a[1]))(bez(max(0, q - 0.02)), bez(min(1, q + 0.02)))
+                    ang = math.degrees(math.atan2(-dy, dx))       # screen y points down
+                    sc_ = 1 if q < 1 else 1 - (t - t1) / 0.25
+                    place(fr, plane, x, y, sc_, min(1, (t - t0) / 0.1), rot=ang - 45)
+            u = t - t1
+            if u > 0:                                           # destination pin pops, ring pulses
+                k = ease_out_back(u / 0.4, 2.2)
+                r = 40 + 160 * ease_out((u % 1.2) / 1.2)
+                lay = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+                ImageDraw.Draw(lay).ellipse((pB[0] - r, pB[1] + 10 - r * 0.45, pB[0] + r, pB[1] + 10 + r * 0.45),
+                                            outline=LIME + (int(220 * (1 - (u % 1.2) / 1.2)),), width=6)
+                fr.alpha_composite(lay)
+                place(fr, pin, pB[0], pB[1] - 50, k, min(1, u / 0.1))
+                place(fr, gB, pB[0], pB[1] + 70, k, 0.6)
+                place(fr, labB, pB[0], pB[1] + 70, k, min(1, u / 0.1))
+            if stk is not None and t > stk['t']:
+                v = t - stk['t']
+                k = 1 + 1.3 * (1 - ease_out(v / 0.18, 3))
+                place(fr, stk['glow'], stk['x'], stk['y'], k, 0.8 * min(1, v / 0.1), rot=stk['rot'])
+                place(fr, stk['im'], stk['x'], stk['y'], k, min(1, v / 0.06), rot=stk['rot'])
         return draw
 
     # ---------------------------------------------------------------- scene: streak
