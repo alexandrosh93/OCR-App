@@ -7,7 +7,8 @@
 From the modern test (make_modern.py): big photos with slow push-ins, clean Inter Display text with masked reveals,
 the map with coordinates and a live distance counter, the 0'-90' match timeline, pill captions, progress bar,
 swipe-up transitions, soft grain.
-From the current style (make_story.py): the animated «Ήξερες ότι;» sticker (intro pop, bulb, sticker in the header),
+From the current style (make_story.py): the animated «Ήξερες ότι;» sticker (intro pop + bulb; it pops out again
+when the photos start, so it never covers them, and returns on the end card),
 the mascot, chunky stickers (ΙΣΤΟΡΙΚΟ!, ΣΑΝΓΚΟΪ 56', VS ΛΕΓΚΙΑ), team plates with the crest and flip-clock tiles,
 the crest on rotating rays, confetti, emoji (✈️ 🇨🇾 🇵🇱 👑), floating particles and the «ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ 👇» badge.
 """
@@ -47,7 +48,7 @@ class Hybrid(Modern):
             k += 1
         rest = words[k:]
         split = max((rest[0][1] - 0.15) if rest else self.t_intro - 0.6, self.intro.t_hit + 0.45)
-        self.fly0, self.fly_end = split, split + 0.6
+        self.fly0, self.fly_end = split, split + 0.45      # sticker pops out: it must not cover the photos
         size = cfg.get('hook_size', 122)
         f, tr, sp = F('Black', size), -int(size * 0.025), int(size * 0.26)
         acc = {w.lower() for w in cfg.get('hook_accent', [])}
@@ -71,7 +72,7 @@ class Hybrid(Modern):
             for im, t0 in row:
                 placed.append((im, x - pad, top + li * lh - pad, t0))
                 x += im.width - 2 * pad + sp
-        self.events += [(0.0, 'riser'), (self.intro.t_hit, 'boom_big'), (self.intro.t_bulb, 'ding')]
+        self.events += [(0.0, 'riser'), (self.intro.t_hit, 'boom_big'), (self.intro.t_bulb, 'ding'), (split, 'whoosh')]
 
         def draw(fr, t):
             if t < split:                                 # the original sticker intro, untouched
@@ -83,11 +84,12 @@ class Hybrid(Modern):
                 fr.alpha_composite(with_alpha(self.intro.background(t), 1 - x))
             for im, xx, yy, t0 in placed:
                 reveal(fr, im, xx, yy, (t - (t0 - 0.06)) / 0.5)
-            if t < self.fly_end:                          # sticker flies up into the header
-                e = ease((t - self.fly0) / (self.fly_end - self.fly0))
+            if t < self.fly_end:                          # sticker pops out (small grow, then shrinks away)
+                e = (t - self.fly0) / (self.fly_end - self.fly0)
                 s0 = self.intro.logo_state(self.fly0)[0]
-                fr.paste(self.intro.draw_sticker(fr.copy(), t, W / 2, 880 + (STICKER_Y - 880) * e,
-                                                 s0 + (STICKER_S - s0) * e, glow=0.9))
+                s = s0 * (1 + 0.08 * ease_out(e / 0.25)) if e < 0.25 else s0 * 1.08 * (1 - ease((e - 0.25) / 0.75))
+                if s > 0.02:
+                    fr.paste(self.intro.draw_sticker(fr.copy(), t, W / 2, 880 - 140 * ease(e), s, glow=0.9))
         return draw
 
     # ---------------------------------------------------------------- date: clean type + flip-clock year
@@ -360,9 +362,7 @@ class Hybrid(Modern):
         if show and t >= self.fly0:
             u = t - self.fly0
             place(fr, self.k_small, 60 + self.k_small.width / 2, LOGO_Y - 110 * (1 - ease_out(min(1, u / 0.5))), 1, min(1, u / 0.3))
-        if show and t >= self.fly_end:
-            fr = self.intro.draw_sticker(fr, t, W / 2, STICKER_Y, STICKER_S * (1 + 0.012 * math.sin(2 * math.pi * 0.8 * t)), glow=0.9)
-        return fr
+        return fr                                         # no «Ήξερες ότι;» sticker up here: it would cover the photos
 
     def frame(self, n):
         t = n / FPS
