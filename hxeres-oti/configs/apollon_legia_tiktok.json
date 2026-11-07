@@ -168,15 +168,13 @@
           "photo": "posts/apollon_legia_celebration.jpg",
           "at": {
             "word": "λέγκια"
-          },
-          "width": 660
+          }
         },
         {
           "photo": "posts/apollon_legia_sangoy_celebration.jpg",
           "at": {
             "word": "σανγκόι"
-          },
-          "width": 660
+          }
         }
       ],
       "sticker": {
@@ -185,7 +183,7 @@
           "word": "ήρωας"
         },
         "x": 580,
-        "y": 1165,
+        "y": 1238,
         "rotate": -5,
         "max_size": 120
       }

@@ -748,7 +748,7 @@ class Story:
 
     def build_stats(self, sc, line, T):
         """Photo card + a row of stat boxes whose numbers roll in on the spoken words (19 / 7 / 0)."""
-        card = self.photo_card(800, 470, self.load_photo(sc.get('photo')))
+        card = self.photo_card(sc.get('card_width', 980), sc.get('card_max_h', 520), self.load_photo(sc.get('photo')))
         tP = T + 0.12
         pill = self.pill_img(sc['pill']) if sc.get('pill') else None
         tPl = self.at(line, sc.get('pill_at', 0.2)) if pill is not None else None
@@ -786,7 +786,7 @@ class Story:
         self.events.append((tP, 'whoosh'))
         if tPl is not None:
             self.events.append((tPl, 'pop'))
-        Yc, Ypill, Yb = 700, 992, 1160
+        Yc, Ypill, Yb = 690, 1002, 1162
 
         def draw(fr, t):
             self.draw_card(fr, card, t, tP, XC, Yc)
@@ -809,8 +809,8 @@ class Story:
     # ---------------------------------------------------------------- scene: table
     def build_table(self, sc, line, T):
         """Standings snippet (pos · crest · team · points) under a photo stack, with a '+1' style badge."""
-        card = self.photo_card(800, 470, self.load_photo(sc.get('photo')))
-        card2 = self.photo_card(330, 220, self.load_photo(sc['photo2'])) if sc.get('photo2') else None
+        card = self.photo_card(sc.get('card_width', 980), sc.get('card_max_h', 520), self.load_photo(sc.get('photo')))
+        card2 = self.photo_card(360, 240, self.load_photo(sc['photo2'])) if sc.get('photo2') else None
         tP = T + 0.12
         title = self.pill_img(sc['title'], 36) if sc.get('title') else None
         tT = self.at(line, sc.get('title_at', 0.3)) if title is not None else None
@@ -862,7 +862,7 @@ class Story:
         def draw(fr, t):
             self.draw_card(fr, card, t, tP, XC, Yc)
             if card2 is not None:
-                self.draw_card(fr, card2, t, tP + 0.35, XC + 240, Yc + 150, rot_end=7)
+                self.draw_card(fr, card2, t, tP + 0.35, XC + 250, Yc + 140, rot_end=7)
             if title is not None and t > tT:
                 v = t - tT
                 place(fr, title, XC, Yt, 0.6 + 0.4 * ease_out_back(v / 0.35, 2.0), min(1, v / 0.12))
@@ -963,7 +963,7 @@ class Story:
             return Image.open(os.path.join(HERE, path)).convert('RGBA') if path else None
         crest = crest_of('home_crest', self.team['crest'])            # left plate (home side)
         crest_away = crest_of('away_crest', None)                     # right plate, e.g. our team playing away
-        card = self.photo_card(sc.get('card_width', 800), 600, self.load_photo(sc.get('photo')))
+        card = self.photo_card(sc.get('card_width', 980), sc.get('card_max_h', 600), self.load_photo(sc.get('photo')))
         tP = T + 0.12
         tHo, tAw, tBox = self.at(line, sc['home_at']), self.at(line, sc['away_at']), self.at(line, sc['score_at'])
         card2 = self.photo_card(330, 220, self.load_photo(sc['photo2'])) if sc.get('photo2') else None   # polaroid
@@ -1012,7 +1012,7 @@ class Story:
         self.events += [(tP, 'whoosh'), (tHo, 'pop'), (tAw, 'pop'), (tBox, 'thud')]
         self.events += [(s['t_label'], 'pop') for s in steps[1:]]
         self.shakes.append((tBox, 8))
-        Yc, Ys = 730, 1145
+        Yc, Ys = 742, 1150
         xl, xr = XC - bw / 2 - home.width / 2 + 16, XC + bw / 2 + away.width / 2 - 16
 
         def draw(fr, t):
@@ -1204,10 +1204,10 @@ class Story:
     # ---------------------------------------------------------------- scene: gallery
     def build_gallery(self, sc, line, T):
         """Several real photos pop in one after another as a tilted stack, plus an optional sticker."""
-        layout = [(-70, 640, -7), (70, 845, 6), (-40, 1050, -3), (60, 760, 4)]
+        layout = [(-60, 660, -6), (60, 870, 5), (-30, 1075, -3), (50, 780, 4)]
         cards = []
         for i, it in enumerate(sc['photos']):
-            card = self.photo_card(it.get('width', 620), it.get('max_h', 430), self.load_photo(it['photo']))
+            card = self.photo_card(it.get('width', 820), it.get('max_h', 520), self.load_photo(it['photo']))
             dx, y, rot = layout[i % len(layout)]
             dx, y, rot = it.get('dx', dx), it.get('y', y), it.get('rot', rot)
             t0 = self.at(line, it['at'])
