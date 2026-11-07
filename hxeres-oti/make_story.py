@@ -323,6 +323,19 @@ def sfx_confetti(dur=1.6):
 class Story:
     def __init__(self, cfg_path):
         self.cfg = cfg = json.load(open(cfg_path, encoding='utf-8'))
+        self.load_voice()
+        self.intro = Intro()
+        self.team = cfg['team']
+        self.tcol = tuple(self.team['color'])
+        self.photo = Image.open(os.path.join(HERE, cfg['photo'])).convert('RGB')
+        self.events, self.shakes, self.flashes = [], [], []
+        self.timeline()
+        self.build_backdrop()
+        self._init_rest()
+
+    def load_voice(self):
+        """TTS for hook + lines + CTA with word timings, rising questions and optional pause tightening."""
+        cfg = self.cfg
         voice = cfg.get('voice', 'el-GR-NestorasNeural')
         rate, pitch, fx = cfg.get('rate', '+18%'), cfg.get('pitch', '+10Hz'), cfg.get('voice_fx', True)
         lines = [cfg.get('hook', cfg.get('intro_line', 'Ήξερες ότι;'))] + cfg['lines'] + \
@@ -343,13 +356,9 @@ class Story:
             return y, (w[:-1] + [[w[-1][0], w[-1][1], w[-1][2] + extra]] if w else w)
         raw = [ask(a, w, l) if l.get('question', is_question(l['text'])) else (a, w) for (a, w), l in zip(raw, lines)]
         self.vo = [tighten(*v, max_pause=mp) if mp else v for v in raw]
-        self.intro = Intro()
-        self.team = cfg['team']
-        self.tcol = tuple(self.team['color'])
-        self.photo = Image.open(os.path.join(HERE, cfg['photo'])).convert('RGB')
-        self.events, self.shakes, self.flashes = [], [], []
-        self.timeline()
-        self.build_backdrop()
+
+    def _init_rest(self):
+        cfg = self.cfg
         kl = Image.open(os.path.join(HERE, 'assets', 'kouponaki_logo.png')).convert('RGBA')
         self.k_small = kl.resize((330, int(kl.height * 330 / kl.width)), Image.LANCZOS)
         self.k_big = kl.resize((760, int(kl.height * 760 / kl.width)), Image.LANCZOS)
@@ -545,7 +554,8 @@ class Story:
                     break
             else:
                 w, a, b = words[i]
-                toks.append(dict(text=caps(w), t0=base + a, t1=base + b, norms=[norm(w)], brk=brk[i],
+                shown = caps(w) if self.cfg.get('caption_case', 'upper') == 'upper' else w
+                toks.append(dict(text=shown, t0=base + a, t1=base + b, norms=[norm(w)], brk=brk[i],
                                  fw=norm(w) in self.FUNCTION_WORDS))
                 i += 1
         if toks and is_question(src):                     # show the question mark on screen too
