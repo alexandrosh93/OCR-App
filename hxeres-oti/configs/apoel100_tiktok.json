@@ -1,0 +1,250 @@
+{
+  "photo": "posts/apoel100_fans.jpg",
+  "team": {
+    "name": "ΑΠΟΕΛ",
+    "color": [
+      30,
+      80,
+      190
+    ],
+    "crest": "assets/apoel_crest.png",
+    "mascot": "assets/apoel_mascot.png"
+  },
+  "voice": "el-GR-NestorasNeural",
+  "rate": "+10%",
+  "pitch": "+0Hz",
+  "voice_fx": false,
+  "max_pause": null,
+  "tail": 0.6,
+  "hook": {
+    "text": "Ήξερες ότι ο ΑΠΟΕΛ κλείνει εκατό χρόνια ιστορίας;",
+    "question_start": 0.62,
+    "question_stretch": 1.7,
+    "question_semitones": 7.5
+  },
+  "lines": [
+    "Ιδρύθηκε στις οκτώ Νοεμβρίου του χίλια εννιακόσια είκοσι έξι, στη Λευκωσία.",
+    "Από τότε, μάζεψε είκοσι εννιά πρωταθλήματα, είκοσι ένα κύπελλα, και δεκαπέντε σούπερ καπ!",
+    "Πήρε επτά πρωταθλήματα στη σειρά, από το δύο χιλιάδες δεκατρία μέχρι το δύο χιλιάδες δεκαεννιά!",
+    "Και το δύο χιλιάδες δώδεκα, έγινε η πρώτη κυπριακή ομάδα στους οκτώ του Τσάμπιονς Λιγκ!",
+    "Για τα εκατό του χρόνια, το Δημαρχείο της Λευκωσίας φωταγωγήθηκε μπλε και κίτρινο!",
+    "Εκατό χρόνια ΑΠΟΕΛ. Χρόνια πολλά, Θρύλε!"
+  ],
+  "cta": "Ποια είναι η αγαπημένη σου στιγμή του ΑΠΟΕΛ; Γράψ' τη στα σχόλια, και κάνε φόλοου στο Κουπονάκι!",
+  "cta_badge": "ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ",
+  "emoji": {
+    "ιστορίας": "💙💛",
+    "λευκωσία": "📍",
+    "κύπελλα": "🏆",
+    "σειρά": "🔥",
+    "λιγκ": "⭐",
+    "κίτρινο": "💙💛",
+    "θρύλε": "🎉",
+    "σχόλια": "👇"
+  },
+  "caption_replace": {
+    "χίλια εννιακόσια είκοσι έξι": "1926",
+    "οκτώ Νοεμβρίου": "8 ΝΟΕΜΒΡΙΟΥ",
+    "είκοσι εννιά": "29",
+    "είκοσι ένα": "21",
+    "δεκαπέντε": "15",
+    "επτά": "7",
+    "δύο χιλιάδες δεκατρία": "2013",
+    "δύο χιλιάδες δεκαεννιά": "2019",
+    "δύο χιλιάδες δώδεκα": "2012",
+    "οκτώ": "8",
+    "Τσάμπιονς Λιγκ": "CHAMPIONS LEAGUE",
+    "εκατό": "100",
+    "φόλοου": "FOLLOW",
+    "Κουπονάκι": "KOUPONAKI"
+  },
+  "scenes": [
+    {
+      "type": "date",
+      "backdrop": "posts/apoel100_crestwall.jpg",
+      "day": "8",
+      "month": "ΝΟΕΜΒΡΙΟΥ",
+      "year": "1926",
+      "day_at": {
+        "word": "οκτώ"
+      },
+      "month_at": {
+        "word": "νοεμβρίου"
+      },
+      "year_at": {
+        "word": "χίλια"
+      },
+      "year_end": {
+        "word": "έξι",
+        "edge": "end"
+      }
+    },
+    {
+      "type": "stats",
+      "backdrop": "posts/apoel100_fans.jpg",
+      "photo": "posts/apoel_team.jpg",
+      "pill": "ΡΕΚΟΡ ΤΙΤΛΩΝ ΣΤΗΝ ΚΥΠΡΟ",
+      "pill_at": {
+        "word": "μάζεψε"
+      },
+      "items": [
+        {
+          "value": 29,
+          "label": "ΠΡΩΤΑΘΛΗΜΑΤΑ",
+          "color": "lime",
+          "hero": true,
+          "at": {
+            "word": "εννιά"
+          }
+        },
+        {
+          "value": 21,
+          "label": "ΚΥΠΕΛΛΑ",
+          "color": "yellow",
+          "at": {
+            "word": "ένα"
+          }
+        },
+        {
+          "value": 15,
+          "label": "ΣΟΥΠΕΡ ΚΑΠ",
+          "color": "white",
+          "at": {
+            "word": "δεκαπέντε"
+          }
+        }
+      ]
+    },
+    {
+      "type": "streak",
+      "backdrop": "posts/apoel_team.jpg",
+      "seasons": [
+        "2012–13",
+        "2013–14",
+        "2014–15",
+        "2015–16",
+        "2016–17",
+        "2017–18",
+        "2018–19"
+      ],
+      "start_at": {
+        "word": "δύο"
+      },
+      "end_at": {
+        "word": "δεκαεννιά"
+      },
+      "stamp": {
+        "text": "ΡΕΚΟΡ!",
+        "at": {
+          "word": "δεκαεννιά",
+          "edge": "end"
+        },
+        "x": 836,
+        "y": 548,
+        "max_w": 300,
+        "max_size": 110,
+        "rotate": 10
+      }
+    },
+    {
+      "type": "gallery",
+      "backdrop": "posts/apoel_penalty.jpg",
+      "photos": [
+        {
+          "photo": "posts/apoel_penalty.jpg",
+          "at": {
+            "word": "δώδεκα"
+          }
+        },
+        {
+          "photo": "posts/apoel_goal.jpg",
+          "at": {
+            "word": "πρώτη"
+          }
+        }
+      ],
+      "sticker": {
+        "text": "ΣΤΟΥΣ 8 ΤΗΣ ΕΥΡΩΠΗΣ!",
+        "at": {
+          "word": "οκτώ"
+        },
+        "x": 660,
+        "y": 470,
+        "rotate": 8,
+        "max_size": 96
+      }
+    },
+    {
+      "type": "gallery",
+      "backdrop": "posts/apoel100_lights.jpg",
+      "photos": [
+        {
+          "photo": "posts/apoel100_lights.jpg",
+          "at": {
+            "word": "δημαρχείο"
+          }
+        },
+        {
+          "photo": "posts/apoel100_fans.jpg",
+          "at": {
+            "word": "μπλε"
+          }
+        }
+      ],
+      "sticker": {
+        "text": "ΕΝΑΣ ΑΙΩΝΑΣ!",
+        "at": {
+          "word": "κίτρινο"
+        },
+        "x": 700,
+        "y": 470,
+        "rotate": 8
+      }
+    },
+    {
+      "type": "fact",
+      "backdrop": "posts/apoel100_aionas.jpg",
+      "crest_at": 0.0,
+      "words": [
+        {
+          "text": "100 ΧΡΟΝΙΑ",
+          "color": "white",
+          "max_size": 200,
+          "at": {
+            "word": "εκατό"
+          }
+        },
+        {
+          "text": "ΑΠΟΕΛ",
+          "color": "yellow",
+          "max_size": 210,
+          "at": {
+            "word": "αποελ"
+          }
+        },
+        {
+          "text": "1926–2026",
+          "color": "white",
+          "max_size": 90,
+          "at": {
+            "word": "χρόνια",
+            "nth": 1
+          }
+        }
+      ],
+      "mascot_at": {
+        "word": "εκατό",
+        "offset": 0.3
+      },
+      "confetti_at": {
+        "word": "πολλά"
+      },
+      "stamp": {
+        "text": "ΧΡΟΝΙΑ ΠΟΛΛΑ!",
+        "at": {
+          "word": "θρύλε"
+        }
+      }
+    }
+  ]
+}

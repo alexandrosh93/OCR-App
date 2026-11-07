@@ -337,7 +337,8 @@ class Story:
         # questions get a real rising end (TTS reads them almost flat); "question": false turns it off
         qs = cfg.get('question_semitones', 6.0)
         def ask(a, w, l):
-            y = question_rise(a, w, l.get('question_semitones', qs), start=l.get('question_start', 0.5))
+            y = question_rise(a, w, l.get('question_semitones', qs), start=l.get('question_start', 0.5),
+                              stretch=l.get('question_stretch', 1.25))
             extra = (len(y) - len(a)) / SR
             return y, (w[:-1] + [[w[-1][0], w[-1][1], w[-1][2] + extra]] if w else w)
         raw = [ask(a, w, l) if l.get('question', is_question(l['text'])) else (a, w) for (a, w), l in zip(raw, lines)]
@@ -1140,8 +1141,8 @@ class Story:
             txt = plain_text(lab, f, stroke=3)
             chip.alpha_composite(txt, (int(20 + 22 + trophy.width + 18), int(20 + ch / 2 - txt.height / 2)))
             r, c = divmod(i, 2)
-            chips.append(dict(img=chip, glow=glow_of(chip, 14, LIME)[0], t=times[i],
-                              x=XC + (c - 0.5) * (cw + gx), y=815 + r * (ch + gy)))
+            x = XC if (n % 2 and i == n - 1) else XC + (c - 0.5) * (cw + gx)      # odd count: centre the last chip
+            chips.append(dict(img=chip, glow=glow_of(chip, 14, LIME)[0], t=times[i], x=x, y=815 + r * (ch + gy)))
             self.events += [(times[i], 'pop'), (times[i] + 0.02, 'tick')]
         self.events += [(T + 0.15, 'pop'), (times[-1], 'thud')]
         self.shakes.append((times[-1], 12))
