@@ -5,8 +5,8 @@
     python3 make_hybrid.py configs/apollon_legia_hybrid.json --preview 1,4,8 preview.png
 
 From the modern test (make_modern.py): big photos with slow push-ins, clean Inter Display text with masked reveals,
-the map with coordinates and a live distance counter, the 0'-90' match timeline, pill captions, progress bar,
-swipe-up transitions, soft grain.
+the map with coordinates and a live distance counter, the 0'-90' match timeline, pill captions,
+swipe-up transitions, soft grain (no progress bar).
 From the current style (make_story.py): the animated «Ήξερες ότι;» sticker (intro pop + bulb; it pops out again
 when the photos start, so it never covers them, and returns on the end card),
 the mascot, chunky stickers (ΙΣΤΟΡΙΚΟ!, ΣΑΝΓΚΟΪ 56', VS ΛΕΓΚΙΑ), team plates with the crest and flip-clock tiles,
@@ -351,14 +351,7 @@ class Hybrid(Modern):
 
     # ---------------------------------------------------------------- header + compositing
     def hheader(self, fr, t, show=True):
-        a = min(1, t / 0.5)
-        lay = Image.new('RGBA', (W, 12), (0, 0, 0, 0))
-        d = ImageDraw.Draw(lay)
-        d.rounded_rectangle((M, 3, W - M, 9), 3, fill=(255, 255, 255, int(55 * a)))
-        xp = M + (W - 2 * M) * min(1, t / self.total)
-        if xp > M + 6:
-            d.rounded_rectangle((M, 3, xp, 9), 3, fill=ACC + (int(255 * a),))
-        fr.alpha_composite(lay, (0, 128))
+        """Only the small kouponaki.com logo: no progress bar, no «Ήξερες ότι;» sticker over the photos."""
         if show and t >= self.fly0:
             u = t - self.fly0
             place(fr, self.k_small, 60 + self.k_small.width / 2, LOGO_Y - 110 * (1 - ease_out(min(1, u / 0.5))), 1, min(1, u / 0.3))
