@@ -85,3 +85,14 @@ python3 make_tiktok.py configs/anorthosis_edit.json ../videos/anorthosis_edit.mp
 ```
 python3 make_modern.py configs/apollon_legia_modern.json ../videos/TEST_modern_apollon_legia.mp4
 ```
+
+## Δοκιμαστικό «hybrid» στυλ: `make_hybrid.py` (test)
+
+Η βάση του modern (μεγάλες φωτογραφίες, καθαρά γράμματα με μάσκα, χάρτης/απόσταση, χρονογραμμή αγώνα,
+pill λεζάντες, μπάρα προόδου, swipe) μαζί με τα στοιχεία του τωρινού στυλ: το animated sticker «Ήξερες ότι;»
+(αρχή + πάνω στην οθόνη), μασκότ, «χοντρά» stickers (ΙΣΤΟΡΙΚΟ!, ΣΑΝΓΚΟΪ 56', VS ΛΕΓΚΙΑ), ταμπελάκια ομάδων
+με σήμα και πλακάκια-ρολόι, σήμα πάνω σε ακτίνες, κομφετί, emoji (✈️ 🇨🇾 🇵🇱 👑) και «ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ 👇».
+
+```
+python3 make_hybrid.py configs/apollon_legia_hybrid.json ../videos/TEST_hybrid_apollon_legia.mp4
+```

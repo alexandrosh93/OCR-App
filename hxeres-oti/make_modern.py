@@ -15,9 +15,9 @@ Scenes: date, trip, score, gallery, fact, plus the kinetic hook intro and the en
 import sys, os, json, math, wave
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageEnhance, ImageChops
-from make_video import (HERE, CACHE, W, H, FPS, SR, ease, ease_out, ease_out_back, with_alpha, place,
+from make_video import (HERE, CACHE, W, H, FPS, SR, LIME, ease, ease_out, ease_out_back, with_alpha, place, glow_of,
                         sfx_pop, sfx_thud, sfx_whoosh, sfx_boom, sfx_riser)
-from make_story import Story, norm, sfx_tick, odometer_strip, emoji_img, roll, step_value, XC, CAP_Y
+from make_story import Story, norm, sfx_tick, odometer_strip, emoji_img, roll, step_value, fit_text, XC, CAP_Y
 
 INTER = '/usr/share/fonts/opentype/inter/InterDisplay-{}.otf'
 MONO = '/usr/share/fonts/truetype/jetbrains-mono/JetBrainsMono-{}.ttf'
@@ -401,20 +401,34 @@ class Modern(Story):
 
         def city(c, side):
             name = text_img(c['name'], F('Black', 60), WHITE, tracking=-1)
+            if c.get('flag'):                                # e.g. 🇨🇾 before the city name
+                fl = emoji_img(c['flag'], 50)
+                nm = Image.new('RGBA', (fl.width + 14 + name.width, name.height), (0, 0, 0, 0))
+                cap_mid = int(4 + F('Black', 60).getmetrics()[0] - 0.36 * 60)
+                nm.alpha_composite(fl, (0, max(0, cap_mid - fl.height // 2)))
+                nm.alpha_composite(name, (fl.width + 14, 0))
+                name = nm
             coord = text_img(f"{abs(c['lat']):.2f}°{'N' if c['lat'] >= 0 else 'S'}  {abs(c['lon']):.2f}°{'E' if c['lon'] >= 0 else 'W'}",
                              F('Medium', 24, True), MUTED, tracking=1)
             return dict(name=name, coord=coord, side=side)
         ca, cb = city(A, A.get('label', 'below')), city(B, B.get('label', 'right'))
-        sub = text_img(B['sub'], F('Bold', 40), ACC) if B.get('sub') else None
-        tSub = self.at(line, sc['sub_at']) if sub is not None else None
+        sub = text_img(B['sub'], F('Bold', 40), ACC) if B.get('sub') and sc.get('sub_style') != 'sticker' else None
+        sub_st = None
+        if B.get('sub') and sc.get('sub_style') == 'sticker':  # chunky sticker of the current style
+            simg = fit_text(B['sub'], 'yellow', 420, 96)
+            sx, sy = sc.get('sub_xy', (bx + 250, by + 190))
+            sub_st = dict(im=simg, glow=glow_of(simg, 16, LIME)[0], x=sx, y=sy, rot=sc.get('sub_rot', -8))
+        tSub = self.at(line, sc['sub_at']) if (sub is not None or sub_st is not None) else None
+        plane = emoji_img(sc['plane'], sc.get('plane_size', 110)) if sc.get('plane') else None
+        tag_y = sc.get('tag_y', 300)
         tag = pill_img(sc['tag'], 24, fg=ACC, bg=ACC, weight='SemiBold', tracking=2, outline=True, mono=True) if sc.get('tag') else None
         tTag = self.at(line, sc.get('tag_at', 0.2)) if tag is not None else None
         dlab = self.label_img('ΑΠΟΣΤΑΣΗ')
         self.events += [(T + 0.2, 'pop'), (t0, 'whoosh'), (t1, 'thud')]
         if tTag is not None:
             self.events.append((tTag, 'pop'))
-        if sub is not None:
-            self.events.append((tSub, 'pop'))
+        if tSub is not None:
+            self.events.append((tSub, 'thud' if sub_st is not None else 'pop'))
         self.add_ticks(lambda tt: dist / 40 * ease(min(1, max(0, (tt - t0) / max(t1 - t0, 0.3)))), t0, t1)
 
         def label_at(fr, c, x, y, p, extra=None, pe=0):
@@ -446,7 +460,14 @@ class Modern(Story):
                 fr.alpha_composite(lay)
                 if t < t1 + 0.3:
                     x, y = bez(q)
-                    place(fr, head, x, y, 1, 1 - max(0, (t - t1) / 0.3))
+                    fade = 1 - max(0, (t - t1) / 0.3)
+                    if plane is not None:                    # ✈️ turned along the flight path
+                        (xa, ya), (xb, yb) = bez(max(0, q - 0.02)), bez(min(1, q + 0.02))
+                        ang = math.degrees(math.atan2(-(yb - ya), xb - xa))
+                        place(fr, head, x, y, 0.8, 0.6 * fade)
+                        place(fr, plane, x, y, 1, fade, rot=ang - 45)
+                    else:
+                        place(fr, head, x, y, 1, fade)
             v = t - t1
             if v > 0:
                 ph = (v % 1.3) / 1.3
@@ -456,8 +477,13 @@ class Modern(Story):
                 place(fr, ring, bx, by)
                 place(fr, cdot, bx, by, ease_out_back(v / 0.4, 2.2))
                 label_at(fr, cb, bx, by, v / 0.5, sub, (t - tSub) / 0.45 if sub is not None else 0)
+            if sub_st is not None and t > tSub:
+                w = t - tSub
+                k = 1 + 1.3 * (1 - ease_out(w / 0.18, 3))
+                place(fr, sub_st['glow'], sub_st['x'], sub_st['y'], k, 0.8 * min(1, w / 0.1), rot=sub_st['rot'])
+                place(fr, sub_st['im'], sub_st['x'], sub_st['y'], k, min(1, w / 0.06), rot=sub_st['rot'])
             if tag is not None:
-                reveal(fr, tag, M, 300, (t - tTag) / 0.45)
+                reveal(fr, tag, M, tag_y, (t - tTag) / 0.45)
             if t > t0 - 0.2:
                 a = min(1, (t - (t0 - 0.2)) / 0.3)
                 fr.alpha_composite(with_alpha(dlab, a), (M, 1168))
@@ -466,6 +492,45 @@ class Modern(Story):
         return draw
 
     # ---------------------------------------------------------------- score (+ match timeline)
+    def make_timeline(self, sc, line):
+        """0'-90' match bar: the playhead runs to the goal minute on the voice, then a marker + label pop."""
+        tl_t = self.at(line, sc.get('timeline_at', 0.2))
+        g = sc.get('goal')
+        g_t = self.at(line, g['at']) if g else None
+        g_lab = text_img(g['label'], F('Bold', 30, True), ACC, tracking=1) if g else None
+        x0, x1, yb = M, W - M, sc.get('timeline_y', 1030)
+        ticks = [(m, text_img(f"{m}'", F('Medium', 20, True), MUTED)) for m in range(0, 91, 15)]
+        gdot = dot_sprite(11, ACC, glow=14)
+        pdot = dot_sprite(7, WHITE)
+        self.events.append((tl_t, 'pop'))
+        if g:
+            self.events.append((g_t, 'thud'))
+
+        def xm(m):
+            return x0 + (x1 - x0) * m / 90
+
+        def draw(fr, t):
+            a = min(1, max(0, (t - tl_t) / 0.35))
+            if a > 0:                                    # timeline 0'-90'
+                lay = Image.new('RGBA', (W, 80), (0, 0, 0, 0))
+                d = ImageDraw.Draw(lay)
+                d.rounded_rectangle((x0, 20, x1, 24), 2, fill=(255, 255, 255, int(60 * a)))
+                for m, im in ticks:
+                    d.line((xm(m), 14, xm(m), 30), fill=(255, 255, 255, int(90 * a)), width=2)
+                    lay.alpha_composite(with_alpha(im, a), (int(min(max(xm(m) - im.width / 2, 0), W - im.width)), 38))
+                gm = g['minute'] if g else 90
+                mnow = gm * ease(min(1, max(0, (t - tl_t) / max((g_t or tl_t + 1) - tl_t, 0.3))))
+                if mnow > 0.3:
+                    d.rounded_rectangle((x0, 19, xm(mnow), 25), 3, fill=ACC + (int(255 * a),))
+                fr.alpha_composite(lay, (0, yb - 22))
+                if g and t >= g_t:
+                    v = t - g_t
+                    place(fr, gdot, xm(gm), yb, ease_out_back(v / 0.35, 2.4))
+                    reveal(fr, g_lab, min(xm(gm) - g_lab.width / 2, W - M - g_lab.width), yb - 70, v / 0.4)
+                else:
+                    place(fr, pdot, xm(mnow), yb, 1, a)
+        return draw
+
     def m_score(self, sc, line, T):
         T1 = self.seg_end(line)
         ph = sc.get('ph', 1000)
@@ -491,44 +556,13 @@ class Modern(Story):
         digit_steps = [[(ts, v[k]) for ts, v in steps] for k in (0, 1)]
         for ds in digit_steps:
             self.add_ticks(lambda tt, ds=ds: step_value(tt, ds), ds[0][0], ds[-1][0] + 0.8)
-        tl_t = self.at(line, sc.get('timeline_at', 0.2))
-        g = sc.get('goal')
-        g_t = self.at(line, g['at']) if g else None
-        g_lab = text_img(g['label'], F('Bold', 30, True), ACC, tracking=1) if g else None
-        x0, x1, yb = M, W - M, sc.get('timeline_y', 1030)
-        ticks = [(m, text_img(f"{m}'", F('Medium', 20, True), MUTED)) for m in range(0, 91, 15)]
-        gdot = dot_sprite(11, ACC, glow=14)
-        pdot = dot_sprite(7, WHITE)
-        self.events += [(r['t'], 'pop') for r in rows] + [(tl_t, 'pop')]
-        if g:
-            self.events.append((g_t, 'thud'))
+        tl_draw = self.make_timeline(sc, line)
+        self.events += [(r['t'], 'pop') for r in rows]
         if len(steps) > 1:
             self.events.append((steps[-1][0], 'boom'))
-
-        def xm(m):
-            return x0 + (x1 - x0) * m / 90
-
         def draw(fr, t):
             self.photo_bg(fr, P, (t - T) / max(T1 - T, 0.1))
-            a = min(1, max(0, (t - tl_t) / 0.35))
-            if a > 0:                                    # timeline 0'-90'
-                lay = Image.new('RGBA', (W, 80), (0, 0, 0, 0))
-                d = ImageDraw.Draw(lay)
-                d.rounded_rectangle((x0, 20, x1, 24), 2, fill=(255, 255, 255, int(60 * a)))
-                for m, im in ticks:
-                    d.line((xm(m), 14, xm(m), 30), fill=(255, 255, 255, int(90 * a)), width=2)
-                    lay.alpha_composite(with_alpha(im, a), (int(min(max(xm(m) - im.width / 2, 0), W - im.width)), 38))
-                gm = g['minute'] if g else 90
-                mnow = gm * ease(min(1, max(0, (t - tl_t) / max((g_t or tl_t + 1) - tl_t, 0.3))))
-                if mnow > 0.3:
-                    d.rounded_rectangle((x0, 19, xm(mnow), 25), 3, fill=ACC + (int(255 * a),))
-                fr.alpha_composite(lay, (0, yb - 22))
-                if g and t >= g_t:
-                    v = t - g_t
-                    place(fr, gdot, xm(gm), yb, ease_out_back(v / 0.35, 2.4))
-                    reveal(fr, g_lab, min(xm(gm) - g_lab.width / 2, W - M - g_lab.width), yb - 70, v / 0.4)
-                else:
-                    place(fr, pdot, xm(mnow), yb, 1, a)
+            tl_draw(fr, t)
             for k, r in enumerate(rows):                 # scoreboard rows
                 reveal(fr, r['img'], M, r['y'], (t - r['t']) / 0.5)
                 if t > r['t'] + 0.1:
@@ -560,6 +594,11 @@ class Modern(Story):
         if lab is not None:
             self.events.append((tLab, 'pop'))
         self.events += [(p['t'], 'whoosh') for p in photos[1:]]
+        es = sc.get('emoji_sticker')
+        eimg = emoji_img(es['emoji'], es.get('size', 170)) if es else None
+        tE = self.at(line, es['at']) if es else None
+        if es:
+            self.events.append((tE, 'pop'))
 
         def draw(fr, t):
             u = (t - T) / max(T1 - T, 0.1)
@@ -579,6 +618,10 @@ class Modern(Story):
                 reveal(fr, lab, M, y0, (t - tLab) / 0.45)
             for im, ta, yy in titles:
                 reveal(fr, im, M - 4 - 24, yy, (t - (ta - 0.05)) / 0.55)
+            if es and t > tE:
+                v = t - tE
+                place(fr, eimg, es['x'], es['y'], ease_out_back(v / 0.3, 2.4), min(1, v / 0.08),
+                      rot=es.get('rot', 12) + 6 * math.sin(v * 9) * math.exp(-v * 2))
         return draw
 
     # ---------------------------------------------------------------- fact (statement)
@@ -745,6 +788,10 @@ class Modern(Story):
         return self.grain(fr, n)
 
     # ---------------------------------------------------------------- audio
+    def sfx_lib(self):
+        return {'pop': (sfx_pop, 0.14), 'thud': (sfx_thud, 0.3), 'whoosh': (lambda: sfx_whoosh(0.45), 0.2),
+                'tick': (sfx_tick, 0.05), 'boom': (lambda: sfx_boom(1.4), 0.28), 'riser': (lambda: sfx_riser(0.7), 0.2)}
+
     def audio(self):
         n = int((self.total + 2) * SR)
         vo, sfx = np.zeros(n, np.float32), np.zeros(n, np.float32)
@@ -754,8 +801,7 @@ class Modern(Story):
             x = x[:max(0, n - i)]
             dst[i:i + len(x)] += x * g
 
-        lib = {'pop': (sfx_pop, 0.14), 'thud': (sfx_thud, 0.3), 'whoosh': (lambda: sfx_whoosh(0.45), 0.2),
-               'tick': (sfx_tick, 0.05), 'boom': (lambda: sfx_boom(1.4), 0.28), 'riser': (lambda: sfx_riser(0.7), 0.2)}
+        lib = self.sfx_lib()
         for t, kind in self.events:
             f, g = lib[kind]
             add(t, f(), g, sfx)

@@ -1,0 +1,311 @@
+{
+  "voice": "el-GR-NestorasNeural",
+  "rate": "+10%",
+  "pitch": "+0Hz",
+  "voice_fx": false,
+  "max_pause": null,
+  "tail": 0.6,
+  "hook": {
+    "text": "Ήξερες ότι ο Απόλλωνας έγραψε ιστορία στη Βαρσοβία;",
+    "question_start": 0.68
+  },
+  "lines": [
+    "Πάμε πίσω, στις τρεις Οκτωβρίου του δύο χιλιάδες δεκατρία.",
+    "Ο Απόλλωνας ταξίδεψε στην Πολωνία, για τους ομίλους του Γιουρόπα Λιγκ, κόντρα στη Λέγκια!",
+    "Ο Γκαστόν Σανγκόι είχε χάσει πέναλτι, αλλά στο πενήντα έξι, πήρε την εκδίκησή του!",
+    "Η Λέγκια δεν βρήκε απάντηση, και ο Σανγκόι έγινε ο ήρωας της βραδιάς!",
+    "Και ο Απόλλωνας έγινε η πρώτη κυπριακή ομάδα που κέρδισε εκτός έδρας, σε όμιλο ευρωπαϊκής διοργάνωσης!"
+  ],
+  "cta": "Ποια άλλη ιστορική στιγμή θες να δούμε; Γράψ' τη στα σχόλια, και κάνε φόλοου στο Κουπονάκι!",
+  "theme": "hybrid",
+  "photo": "posts/apollon_legia_celebration.jpg",
+  "team": {
+    "name": "ΑΠΟΛΛΩΝ",
+    "color": [
+      40,
+      120,
+      255
+    ],
+    "crest": "assets/apollon_crest.png",
+    "mascot": "assets/apollon_mascot.png"
+  },
+  "caption_case": "as_is",
+  "hook_photo": "posts/apollon_legia_celebration.jpg",
+  "hook_focus": [
+    0.55,
+    0.42
+  ],
+  "hook_accent": [
+    "ιστορία",
+    "Βαρσοβία"
+  ],
+  "emoji": {
+    "πέναλτι": "😬",
+    "εκδίκησή": "🔥",
+    "διοργάνωσης": "🏆",
+    "σχόλια": "👇"
+  },
+  "caption_replace": {
+    "τρεις Οκτωβρίου": "3 Οκτωβρίου",
+    "δύο χιλιάδες δεκατρία": "2013",
+    "Γιουρόπα Λιγκ": "Europa League",
+    "πενήντα έξι": "56'",
+    "φόλοου": "follow",
+    "Κουπονάκι": "Kouponaki"
+  },
+  "scenes": [
+    {
+      "type": "date",
+      "backdrop": "posts/apollon_legia_celebration.jpg",
+      "label": "UEFA EUROPA LEAGUE · ΟΜΙΛΟΣ J",
+      "day": "03",
+      "month": "Οκτωβρίου",
+      "year": "2013",
+      "day_at": {
+        "word": "τρεις"
+      },
+      "month_at": {
+        "word": "οκτωβρίου"
+      },
+      "year_at": {
+        "word": "δύο"
+      },
+      "year_end": {
+        "word": "δεκατρία",
+        "edge": "end"
+      }
+    },
+    {
+      "type": "trip",
+      "backdrop": "posts/apollon_legia_sangoy_shot.jpg",
+      "from": {
+        "name": "Λεμεσός",
+        "lat": 34.6786,
+        "lon": 33.0413,
+        "label": "below",
+        "flag": "🇨🇾"
+      },
+      "to": {
+        "name": "Βαρσοβία",
+        "lat": 52.2297,
+        "lon": 21.0122,
+        "label": "right",
+        "sub": "VS ΛΕΓΚΙΑ",
+        "flag": "🇵🇱"
+      },
+      "fly_at": {
+        "word": "ταξίδεψε"
+      },
+      "land_at": {
+        "word": "πολωνία",
+        "edge": "end"
+      },
+      "tag": "UEFA EUROPA LEAGUE · ΦΑΣΗ ΟΜΙΛΩΝ",
+      "tag_at": {
+        "word": "ομίλους"
+      },
+      "sub_at": {
+        "word": "λέγκια"
+      },
+      "plane": "✈️",
+      "sub_style": "sticker",
+      "sub_rot": -8,
+      "tag_y": 440,
+      "box": [
+        170,
+        560,
+        910,
+        1060
+      ]
+    },
+    {
+      "type": "score",
+      "photo": "posts/apollon_legia_sangoy_shot.jpg",
+      "focus": [
+        0.42,
+        0.45
+      ],
+      "home": "ΛΕΓΚΙΑ",
+      "home_color": [
+        0,
+        150,
+        90
+      ],
+      "away": "ΑΠΟΛΛΩΝ",
+      "away_color": [
+        40,
+        120,
+        255
+      ],
+      "winner": "away",
+      "home_at": {
+        "word": "γκαστόν"
+      },
+      "away_at": {
+        "word": "γκαστόν",
+        "offset": 0.15
+      },
+      "timeline_at": {
+        "word": "σανγκόι"
+      },
+      "goal": {
+        "minute": 56,
+        "label": "56'",
+        "at": {
+          "word": "πενήντα"
+        }
+      },
+      "steps": [
+        {
+          "value": [
+            0,
+            0
+          ],
+          "at": {
+            "word": "σανγκόι"
+          },
+          "label": "ΣΤΗ ΒΑΡΣΟΒΙΑ"
+        },
+        {
+          "value": [
+            0,
+            1
+          ],
+          "at": {
+            "word": "εκδίκησή"
+          },
+          "label": "ΤΕΛΙΚΟ"
+        }
+      ],
+      "home_crest": null,
+      "away_crest": "assets/apollon_crest.png",
+      "score_at": {
+        "word": "σανγκόι",
+        "offset": -0.15
+      },
+      "badge": {
+        "text": "ΣΑΝΓΚΟΪ 56'",
+        "at": {
+          "word": "πενήντα"
+        },
+        "x": 765,
+        "y": 560,
+        "rotate": 9
+      }
+    },
+    {
+      "type": "gallery",
+      "photos": [
+        {
+          "photo": "posts/apollon_legia_celebration.jpg",
+          "at": 0.0,
+          "focus": [
+            0.55,
+            0.4
+          ]
+        },
+        {
+          "photo": "posts/apollon_legia_sangoy_celebration.jpg",
+          "at": {
+            "word": "σανγκόι"
+          },
+          "focus": [
+            0.56,
+            0.42
+          ]
+        }
+      ],
+      "label": {
+        "text": "ΓΚΑΣΤΟΝ ΣΑΝΓΚΟΪ · #10",
+        "at": {
+          "word": "σανγκόι"
+        }
+      },
+      "title": [
+        {
+          "text": "Ο ήρωας",
+          "at": {
+            "word": "ήρωας"
+          },
+          "size": 168
+        },
+        {
+          "text": "της βραδιάς.",
+          "at": {
+            "word": "βραδιάς"
+          },
+          "size": 96,
+          "color": "acc"
+        }
+      ],
+      "emoji_sticker": {
+        "emoji": "👑",
+        "at": {
+          "word": "ήρωας"
+        },
+        "x": 840,
+        "y": 960,
+        "size": 160,
+        "rot": 16
+      }
+    },
+    {
+      "type": "fact",
+      "photo": "posts/apollon_legia_celebration.jpg",
+      "captions": false,
+      "words": [
+        {
+          "text": "Πρώτη κυπριακή",
+          "at": {
+            "word": "πρώτη"
+          }
+        },
+        {
+          "text": "εκτός έδρας νίκη",
+          "at": {
+            "word": "εκτός"
+          },
+          "color": "acc"
+        },
+        {
+          "text": "σε όμιλο",
+          "at": {
+            "word": "όμιλο"
+          }
+        },
+        {
+          "text": "Ευρώπης.",
+          "at": {
+            "word": "ευρωπαϊκής"
+          }
+        }
+      ],
+      "stamp": {
+        "text": "ΙΣΤΟΡΙΚΟ!",
+        "at": {
+          "word": "διοργάνωσης",
+          "edge": "end"
+        }
+      },
+      "crest_y": 590,
+      "y": 820,
+      "size": 108,
+      "mascot_at": {
+        "word": "έγινε"
+      },
+      "confetti_at": {
+        "word": "όμιλο"
+      }
+    }
+  ],
+  "end": {
+    "photo": "posts/apollon_legia_sangoy_celebration.jpg",
+    "lines": [
+      "Ποια ιστορική στιγμή",
+      "θες να δούμε;"
+    ],
+    "pill": "ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ ↓",
+    "small": "FOLLOW ΓΙΑ ΠΕΡΙΣΣΟΤΕΡΑ «ΗΞΕΡΕΣ ΟΤΙ;»"
+  },
+  "cta_badge": "ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ"
+}
