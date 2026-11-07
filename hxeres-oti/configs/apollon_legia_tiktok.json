@@ -1,5 +1,5 @@
 {
-  "photo": "posts/apollon_legia_fans.jpg",
+  "photo": "posts/apollon_legia_celebration.jpg",
   "team": {
     "name": "ΑΠΟΛΛΩΝΑΣ",
     "color": [
@@ -24,7 +24,7 @@
     "Πάμε πίσω, στις τρεις Οκτωβρίου του δύο χιλιάδες δεκατρία.",
     "Ο Απόλλωνας ταξίδεψε στην Πολωνία, για τους ομίλους του Γιουρόπα Λιγκ, κόντρα στη Λέγκια!",
     "Ο Γκαστόν Σανγκόι είχε χάσει πέναλτι, αλλά στο πενήντα έξι, πήρε την εκδίκησή του!",
-    "Οι παίκτες πανηγύριζαν, και οι οπαδοί του έκαναν πάρτι μέσα στη Βαρσοβία!",
+    "Η Λέγκια δεν βρήκε απάντηση, και ο Σανγκόι έγινε ο ήρωας της βραδιάς!",
     "Και ο Απόλλωνας έγινε η πρώτη κυπριακή ομάδα που κέρδισε εκτός έδρας, σε όμιλο ευρωπαϊκής διοργάνωσης!"
   ],
   "cta": "Ποια άλλη ιστορική στιγμή θες να δούμε; Γράψ' τη στα σχόλια, και κάνε φόλοου στο Κουπονάκι!",
@@ -36,7 +36,7 @@
     "εκδίκησή": "🔥",
     "διοργάνωσης": "🏆",
     "σχόλια": "👇",
-    "πάρτι": "🎉"
+    "ήρωας": "👑"
   },
   "caption_replace": {
     "τρεις Οκτωβρίου": "3 ΟΚΤΩΒΡΙΟΥ",
@@ -50,7 +50,7 @@
   "scenes": [
     {
       "type": "date",
-      "backdrop": "posts/apollon_legia_fans.jpg",
+      "backdrop": "posts/apollon_legia_celebration.jpg",
       "day": "3",
       "month": "ΟΚΤΩΒΡΙΟΥ",
       "year": "2013",
@@ -162,29 +162,32 @@
     },
     {
       "type": "gallery",
-      "backdrop": "posts/apollon_legia_celebration.jpg",
+      "backdrop": "posts/apollon_legia_sangoy_celebration.jpg",
       "photos": [
         {
           "photo": "posts/apollon_legia_celebration.jpg",
           "at": {
-            "word": "παίκτες"
-          }
+            "word": "λέγκια"
+          },
+          "width": 660
         },
         {
-          "photo": "posts/apollon_legia_fans.jpg",
+          "photo": "posts/apollon_legia_sangoy_celebration.jpg",
           "at": {
-            "word": "οπαδοί"
-          }
+            "word": "σανγκόι"
+          },
+          "width": 660
         }
       ],
       "sticker": {
-        "text": "ΑΠΟΘΕΩΣΗ!",
+        "text": "Ο ΗΡΩΑΣ!",
         "at": {
-          "word": "βαρσοβία"
+          "word": "ήρωας"
         },
-        "x": 700,
-        "y": 470,
-        "rotate": 8
+        "x": 580,
+        "y": 1165,
+        "rotate": -5,
+        "max_size": 120
       }
     },
     {

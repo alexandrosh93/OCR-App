@@ -521,7 +521,7 @@ class Story:
 
     # ---------------------------------------------------------------- captions
     FUNCTION_WORDS = {norm(w) for w in ('ο η το οι τα τον την της του των τους τις στο στη στην στον στα στους στις '
-                                       'σε με από για και να θα που μια ένα ένας μιας ενός αν ή δεν μην έχει είχε έχουν είχαν').split()}
+                                       'σε με από για και κι να θα που μια ένα ένας μιας ενός αν ή δεν μην έχει είχε έχουν είχαν').split()}
 
     def caption_tokens(self, li):
         """Words of one VO line as caption tokens; multi-word replacements merge ('δύο χιλιάδες οκτώ' -> '2008')."""
@@ -1197,28 +1197,29 @@ class Story:
         layout = [(-70, 640, -7), (70, 845, 6), (-40, 1050, -3), (60, 760, 4)]
         cards = []
         for i, it in enumerate(sc['photos']):
-            card = self.photo_card(it.get('width', 620), 430, self.load_photo(it['photo']))
+            card = self.photo_card(it.get('width', 620), it.get('max_h', 430), self.load_photo(it['photo']))
             dx, y, rot = layout[i % len(layout)]
+            dx, y, rot = it.get('dx', dx), it.get('y', y), it.get('rot', rot)
             t0 = self.at(line, it['at'])
             cards.append(dict(card=card, t=t0, x=XC + dx, y=y, rot=rot))
             self.events += [(t0, 'whoosh'), (t0 + 0.2, 'pop')]
-        stk = None
-        if sc.get('sticker'):
-            st = sc['sticker']
-            simg = fit_text(st['text'], st.get('color', 'yellow'), 520, st.get('max_size', 120))
-            stk = dict(im=simg, glow=glow_of(simg, 18, LIME)[0], t=self.at(line, st['at']),
-                       x=st.get('x', XC + 180), y=st.get('y', 470), rot=st.get('rotate', 8))
-            self.events.append((stk['t'], 'thud'))
-            self.shakes.append((stk['t'], 12))
+        stks = []                                          # 'sticker' (one) and/or 'stickers' (several)
+        for st in ([sc['sticker']] if sc.get('sticker') else []) + sc.get('stickers', []):
+            simg = fit_text(st['text'], st.get('color', 'yellow'), st.get('max_w', 520), st.get('max_size', 120))
+            stks.append(dict(im=simg, glow=glow_of(simg, 18, LIME)[0], t=self.at(line, st['at']),
+                             x=st.get('x', XC + 180), y=st.get('y', 470), rot=st.get('rotate', 8)))
+            self.events.append((stks[-1]['t'], 'thud'))
+            self.shakes.append((stks[-1]['t'], 12))
 
         def draw(fr, t):
             for c in cards:
                 self.draw_card(fr, c['card'], t, c['t'], c['x'], c['y'], rot_end=c['rot'])
-            if stk is not None and t > stk['t']:
-                u = t - stk['t']
-                k = 1 + 1.3 * (1 - ease_out(u / 0.18, 3))
-                place(fr, stk['glow'], stk['x'], stk['y'], k, 0.8 * min(1, u / 0.1), rot=stk['rot'])
-                place(fr, stk['im'], stk['x'], stk['y'], k, min(1, u / 0.06), rot=stk['rot'])
+            for stk in stks:
+                if t > stk['t']:
+                    u = t - stk['t']
+                    k = 1 + 1.3 * (1 - ease_out(u / 0.18, 3))
+                    place(fr, stk['glow'], stk['x'], stk['y'], k, 0.8 * min(1, u / 0.1), rot=stk['rot'])
+                    place(fr, stk['im'], stk['x'], stk['y'], k, min(1, u / 0.06), rot=stk['rot'])
         return draw
 
     # ---------------------------------------------------------------- scene: fact
