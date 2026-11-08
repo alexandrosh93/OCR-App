@@ -196,21 +196,31 @@ def calendar_icon(size, color=LIME):
 
 # --------------------------------------------------------------------- voice
 def tts(text, voice, rate):
+    """Voice line without word timings. HXERES_TTS=edge switches from Azure AI Speech to the edge-tts endpoint."""
+    engine = os.environ.get('HXERES_TTS', 'azure')
     os.makedirs(CACHE, exist_ok=True)
-    key = hashlib.sha1(f'{voice}|{rate}|{text}'.encode()).hexdigest()[:16]
+    key = hashlib.sha1((f'{voice}|{rate}|{text}' if engine == 'edge' else f'{engine}|{voice}|{rate}|{text}').encode()).hexdigest()[:16]
     wav = os.path.join(CACHE, f'{key}.wav')
     if not os.path.exists(wav):
-        import edge_tts, edge_tts.communicate as c
-        ca = os.environ.get('SSL_CERT_FILE') or ('/root/.ccr/ca-bundle.crt' if os.path.exists('/root/.ccr/ca-bundle.crt') else None)
-        if ca:
-            c._SSL_CTX = ssl.create_default_context(cafile=ca)
-        mp3 = wav[:-4] + '.mp3'
-        asyncio.run(edge_tts.Communicate(text, voice, rate=rate).save(mp3))
+        if engine == 'azure':
+            import azure_tts
+            x, sr = azure_tts.speak(text, voice, rate)
+            src = wav[:-4] + '.src.wav'
+            with wave.open(src, 'wb') as w:
+                w.setnchannels(1), w.setsampwidth(2), w.setframerate(sr)
+                w.writeframes((np.clip(x, -1, 1) * 32767).astype(np.int16).tobytes())
+        else:
+            import edge_tts, edge_tts.communicate as c
+            ca = os.environ.get('SSL_CERT_FILE') or ('/root/.ccr/ca-bundle.crt' if os.path.exists('/root/.ccr/ca-bundle.crt') else None)
+            if ca:
+                c._SSL_CTX = ssl.create_default_context(cafile=ca)
+            src = wav[:-4] + '.mp3'
+            asyncio.run(edge_tts.Communicate(text, voice, rate=rate).save(src))
         trim = ('silenceremove=start_periods=1:start_threshold=-45dB,areverse,'
                 'silenceremove=start_periods=1:start_threshold=-45dB,areverse')
-        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', mp3, '-af', trim, '-ar', str(SR), '-ac', '1',
+        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', src, '-af', trim, '-ar', str(SR), '-ac', '1',
                         '-c:a', 'pcm_s16le', wav], check=True)
-        os.remove(mp3)
+        os.remove(src)
     with wave.open(wav) as w:
         x = np.frombuffer(w.readframes(w.getnframes()), np.int16).astype(np.float32) / 32768
     return x / max(np.abs(x).max(), 1e-3) * 0.89

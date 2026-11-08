@@ -50,12 +50,26 @@ VOICE_FX = ('highpass=f=80,equalizer=f=180:t=q:w=1:g=-2,equalizer=f=3300:t=q:w=1
             'equalizer=f=8000:t=q:w=1:g=2,acompressor=threshold=-22dB:ratio=3.5:attack=4:release=80:makeup=5')
 
 
-def tts_words(text, voice, rate, pitch='+0Hz', fx=True):
-    """Greek TTS + per-word timings. Returns (mono float audio at SR, [[word, start, end], ...])."""
+TTS_ENGINE = os.environ.get('HXERES_TTS', 'azure')     # 'azure' (official Azure AI Speech) or 'edge'
+
+
+def tts_words(text, voice, rate, pitch='+0Hz', fx=True, engine=None):
+    """Greek TTS + per-word timings. Returns (mono float audio at SR, [[word, start, end], ...]).
+    engine 'azure' (default): the official Azure AI Speech REST API, word timings by alignment (azure_tts.py);
+    'edge': the edge-tts read-aloud endpoint (same voices, exact word boundaries, unofficial)."""
+    engine = engine or TTS_ENGINE
     os.makedirs(CACHE, exist_ok=True)
-    key = hashlib.sha1(f'words|{voice}|{rate}|{pitch}|{fx}|{text}'.encode()).hexdigest()[:16]
+    tag = 'words' if engine == 'edge' else f'{engine}|words'          # edge keeps its old cache keys
+    key = hashlib.sha1(f'{tag}|{voice}|{rate}|{pitch}|{fx}|{text}'.encode()).hexdigest()[:16]
     wav, js = os.path.join(CACHE, f'{key}.wav'), os.path.join(CACHE, f'{key}.json')
-    if not (os.path.exists(wav) and os.path.exists(js)):
+    if not (os.path.exists(wav) and os.path.exists(js)) and engine == 'azure':
+        import azure_tts
+        x, sr, words = azure_tts.tts_words(text, voice, rate, pitch)
+        src = wav[:-4] + '.src.wav'
+        with wave.open(src, 'wb') as w:
+            w.setnchannels(1), w.setsampwidth(2), w.setframerate(sr)
+            w.writeframes((np.clip(x, -1, 1) * 32767).astype(np.int16).tobytes())
+    elif not (os.path.exists(wav) and os.path.exists(js)):
         import edge_tts, edge_tts.communicate as c
         ca = os.environ.get('SSL_CERT_FILE') or ('/root/.ccr/ca-bundle.crt' if os.path.exists('/root/.ccr/ca-bundle.crt') else None)
         if ca:
@@ -81,12 +95,13 @@ def tts_words(text, voice, rate, pitch='+0Hz', fx=True):
                     raise
                 print(f'tts retry ({e.__class__.__name__})', file=sys.stderr)
             time.sleep(2 * (attempt + 1))
-        mp3 = wav[:-4] + '.mp3'
-        open(mp3, 'wb').write(audio)
+        src = wav[:-4] + '.mp3'
+        open(src, 'wb').write(audio)
+    if not (os.path.exists(wav) and os.path.exists(js)):
         t0, t1 = max(0.0, words[0][1] - 0.04), words[-1][2] + 0.3
-        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', mp3, '-ss', f'{t0:.3f}', '-to', f'{t1:.3f}']
+        subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', src, '-ss', f'{t0:.3f}', '-to', f'{t1:.3f}']
                        + (['-af', VOICE_FX] if fx else []) + ['-ar', str(SR), '-ac', '1', '-c:a', 'pcm_s16le', wav], check=True)
-        os.remove(mp3)
+        os.remove(src)
         json.dump([[w, a - t0, b - t0] for w, a, b in words], open(js, 'w', encoding='utf-8'), ensure_ascii=False)
     with wave.open(wav) as w:
         x = np.frombuffer(w.readframes(w.getnframes()), np.int16).astype(np.float32) / 32768
@@ -346,7 +361,9 @@ class Story:
         def tts_text(l):                              # the TTS only rises on '?', not on the Greek ';'
             t = l['text']
             return t.rstrip()[:-1] + '?' if l.get('question', is_question(t)) and t.rstrip()[-1:] in ';\u037e' else t
-        raw = [tts_words(tts_text(l), l.get('voice', voice), l.get('rate', rate), l.get('pitch', pitch), fx) for l in lines]
+        engine = cfg.get('tts_engine')                # null = TTS_ENGINE (azure); "edge" = the old endpoint
+        raw = [tts_words(tts_text(l), l.get('voice', voice), l.get('rate', rate), l.get('pitch', pitch), fx, engine)
+               for l in lines]
         # questions get a real rising end (TTS reads them almost flat); "question": false turns it off
         qs = cfg.get('question_semitones', 6.0)
         def ask(a, w, l):

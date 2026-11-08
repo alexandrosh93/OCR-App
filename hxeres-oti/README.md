@@ -1,7 +1,7 @@
 # «Ήξερες ότι;» video generator (Kouponaki)
 
 Ξαναχτίζει το design «Ήξερες ότι;» ως motion graphics σε κάθετο βίντεο 1080×1920 (Reels/TikTok/Shorts)
-με ελληνικό voiceover (edge-tts, `el-GR-NestorasNeural`):
+με ελληνικό voiceover (Νέστορας, `el-GR-NestorasNeural`, από το επίσημο Azure AI Speech, δες «Φωνή» παρακάτω):
 
 1. **Intro**: το sticker «Ήξερες ότι;» σκάει στην οθόνη (ακτίνες, κύμα, σπίθες, ανάβει η λάμπα) και πετάει στην κορυφή.
 2. **Κυρίως μέρος**: logo kouponaki.com, pill, τίτλοι (λευκό/κίτρινο/πράσινο), σήμα ομάδας (+ αστέρια),
@@ -25,7 +25,7 @@
 3. Τρέξε:
 
 ```
-pip install edge-tts numpy pillow opencv-python-headless praat-parselmouth
+pip install numpy pillow opencv-python-headless praat-parselmouth   # + edge-tts μόνο για HXERES_TTS=edge
 python3 make_video.py configs/<όνομα>.json ../videos/<όνομα>.mp4
 python3 make_video.py configs/<όνομα>.json --preview 3,6,9,12 preview.png   # γρήγορος έλεγχος καρέ
 ```
@@ -67,6 +67,18 @@ emoji & stickers που σκάνε, τρανταγμοί και ηχητικά �
 ```
 python3 make_tiktok.py configs/anorthosis_edit.json ../videos/anorthosis_edit.mp4
 ```
+
+### Φωνή (Azure)
+
+Η φωνή βγαίνει από το επίσημο **Azure AI Speech** (resource `kouponaki-tts`, region `northeurope`, δωρεάν F0:
+500.000 χαρακτήρες/μήνα, ~2 φορές το κείμενο κάθε βίντεο). Είναι ο ίδιος Νέστορας με πριν, με άδεια χρήσης για εμπορική σελίδα.
+- Στο cloud session το κλειδί το βάζει αυτόματα ο proxy (network secret «Azure Speech key (kouponaki-tts)»).
+  Τοπικά: `export AZURE_SPEECH_KEY=...` (και `AZURE_SPEECH_REGION` αν δεν είναι `northeurope`).
+- Το REST API του Azure δίνει μόνο ήχο, όχι χρόνους λέξεων, οπότε το `azure_tts.py` τους βρίσκει μόνο του:
+  ζητάει από τον Νέστορα το ίδιο κείμενο λέξη-λέξη με μικρή παύση, και ευθυγραμμίζει τις δύο αναγνώσεις (DTW σε MFCC).
+  Κάθε κόμμα/τελεία «κουμπώνει» ακριβώς στην παύση της φωνής. Σε έλεγχο με 21 φράσεις: μέση απόκλιση 20 ms, μέγιστη 0,1″.
+- Γρήγορη δοκιμή: `python3 azure_tts.py "Κείμενο" out.wav` (τυπώνει τους χρόνους των λέξεων).
+- Εφεδρικά: `"tts_engine": "edge"` στο config ή `HXERES_TTS=edge` = το παλιό edge-tts (ανεπίσημο endpoint).
 
 ### Ερωτήσεις με σωστό τόνο
 
