@@ -356,6 +356,10 @@ class Story:
         lines = [cfg.get('hook', cfg.get('intro_line', 'Ήξερες ότι;'))] + cfg['lines'] + \
                 [cfg.get('cta', 'Ακολούθησε το Κουπονάκι για περισσότερα!')]
         lines = [l if isinstance(l, dict) else {'text': l} for l in lines]      # a line may override rate / pitch
+        for i, l in enumerate(lines):
+            if is_question(l['text']):
+                print(f'note: voice line {i} is a question ({l["text"][:45]}...): new videos keep questions out of '
+                      'the voiceover (see CLAUDE.md)', file=sys.stderr)
         self.line_text = [l['text'] for l in lines]
         mp = cfg.get('max_pause', 0.22)               # null = keep the voice's natural pauses
         def tts_text(l):                              # the TTS only rises on '?', not on the Greek ';'
