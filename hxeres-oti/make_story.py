@@ -399,10 +399,12 @@ class Story:
                            ph=rnd.uniform(0, 6.28)) for _ in range(60)]
 
     # ---------------------------------------------------------------- timing
+    HOOK_START, INTRO_MIN = 0.6, T_INTRO      # voice start and minimum intro length (the sticker intro needs 2.6 s)
+
     def timeline(self):
         d = [len(a) / SR for a, _ in self.vo]
-        starts = [self.cfg.get('hook_start', 0.6)]
-        self.t_intro = max(T_INTRO, starts[0] + d[0] + 0.3)      # the intro lasts as long as the hook
+        starts = [self.cfg.get('hook_start', self.HOOK_START)]
+        self.t_intro = max(self.INTRO_MIN, starts[0] + d[0] + 0.3)      # the intro lasts as long as the hook
         t = self.t_intro + 0.3
         for i in range(1, len(self.vo) - 1):
             starts.append(t)

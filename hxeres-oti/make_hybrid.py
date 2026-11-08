@@ -7,8 +7,11 @@
 From the modern test (make_modern.py): big photos with slow push-ins, clean Inter Display text with masked reveals,
 the map with coordinates and a live distance counter, the 0'-90' match timeline, pill captions,
 swipe-up transitions, soft grain (no progress bar).
-From the current style (make_story.py): the animated «Ήξερες ότι;» sticker (intro pop + bulb; it pops out again
-when the photos start, so it never covers them, and returns on the end card),
+The video opens straight on the hook (photo with a punch-in + the words as they are spoken), so the viewer is
+hooked from the first second; the «Ήξερες ότι;» sticker comes only on the end card, with «Κάνε follow για
+περισσότερα!». "intro_sticker": true brings back the old opening (animated sticker first, then the hook).
+From the current style (make_story.py): the animated «Ήξερες ότι;» sticker (end card; with intro_sticker also the
+opening, popping out when the photos start so it never covers them),
 the mascot, chunky stickers (ΙΣΤΟΡΙΚΟ!, ΣΑΝΓΚΟΪ 56', VS ΛΕΓΚΙΑ), team plates with the crest and flip-clock tiles,
 the crest on rotating rays, confetti, emoji (✈️ 🇨🇾 🇵🇱 👑), floating particles and the «ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ 👇» badge.
 """
@@ -33,22 +36,43 @@ class Hybrid(Modern):
         self.k_small = kl.resize((330, int(kl.height * 330 / kl.width)), Image.LANCZOS)
         self.build_end_card()                            # «ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ 👇» badge of the current style
 
+    @property
+    def sticker_intro(self):
+        """Old opening: the animated «Ήξερες ότι;» sticker before the hook (off by default: it delays the hook)."""
+        return bool(self.cfg.get('intro_sticker', False))
+
+    def timeline(self):
+        if not self.sticker_intro:                # no sticker intro: the voice starts right away
+            self.HOOK_START, self.INTRO_MIN = 0.15, 0.0
+        super().timeline()
+
+    def build_end_card(self):
+        """«ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ 👇» badge of the current style; "cta_badge": null = no badge."""
+        if self.cfg.get('cta_badge', '') is None:
+            self.badge = self.badge_glow = None
+            return
+        self.cfg.setdefault('cta_badge', 'ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ')
+        super().build_end_card()
+
     def sfx_lib(self):
         lib = super().sfx_lib()
         lib.update({'ding': (sfx_ding, 0.75), 'boom_big': (lambda: sfx_boom(1.4), 0.6), 'confetti': (sfx_confetti, 0.45)})
         return lib
 
-    # ---------------------------------------------------------------- intro: sticker pop, then the question
+    # ---------------------------------------------------------------- intro: the hook (optionally after the sticker)
     def m_intro(self):
         cfg = self.cfg
         P = Photo(self.load_photo(cfg.get('hook_photo')), cfg.get('hook_ph', 1120), tuple(cfg.get('hook_focus', (0.5, 0.45))))
         words = self.disp_words(0)
         k = 0
-        while k < len(words) and words[k][3] in ('ηξερες', 'οτι'):
-            k += 1
+        while self.sticker_intro and k < len(words) and words[k][3] in ('ηξερες', 'οτι'):
+            k += 1                                        # «Ήξερες ότι» is spoken over the sticker itself
         rest = words[k:]
-        split = max((rest[0][1] - 0.15) if rest else self.t_intro - 0.6, self.intro.t_hit + 0.45)
-        self.fly0, self.fly_end = split, split + 0.45      # sticker pops out: it must not cover the photos
+        if self.sticker_intro:
+            split = max((rest[0][1] - 0.15) if rest else self.t_intro - 0.6, self.intro.t_hit + 0.45)
+            self.fly0, self.fly_end = split, split + 0.45  # sticker pops out: it must not cover the photos
+        else:
+            split = self.fly0 = self.fly_end = 0.0
         size = cfg.get('hook_size', 122)
         f, tr, sp = F('Black', size), -int(size * 0.025), int(size * 0.26)
         acc = {norm(w) for w in cfg.get('hook_accent', [])}
@@ -73,19 +97,30 @@ class Hybrid(Modern):
             for im, t0 in row:
                 placed.append((im, x - pad, top + li * lh - pad, t0))
                 x += im.width - 2 * pad + sp
-        self.events += [(0.0, 'riser'), (self.intro.t_hit, 'boom_big'), (self.intro.t_bulb, 'ding'), (split, 'whoosh')]
+        if self.sticker_intro:
+            self.events += [(0.0, 'riser'), (self.intro.t_hit, 'boom_big'), (self.intro.t_bulb, 'ding'), (split, 'whoosh')]
+        else:                                             # straight in: a hit on the first frame
+            self.events += [(0.0, 'boom'), (0.02, 'whoosh')]
+        dim = cfg.get('hook_dim', 0.32)
 
         def draw(fr, t):
             if t < split:                                 # the original sticker intro, untouched
                 fr.paste(self.intro.frame(t).convert('RGBA'), (0, 0))
                 return
             x = ease((t - split) / 0.5)
-            self.photo_bg(fr, P, t / max(self.t_intro, 0.1), dim=cfg.get('hook_dim', 0.32))
-            if x < 1:
+            u = t / max(self.t_intro, 0.1)
+            if self.sticker_intro:
+                self.photo_bg(fr, P, u, dim=dim)
+            else:                                         # punch-in: starts 10% closer and settles in 0.45 s
+                z = 1 + 0.10 * (1 - ease_out(min(1.0, t / 0.45)))
+                img = P.at(u, z, 1.07 * z)
+                fr.paste(Image.blend(img, Image.new('RGB', img.size, BG), dim) if dim > 0 else img, (0, 0))
+                fr.alpha_composite(self.shade_for(P.ph))
+            if self.sticker_intro and x < 1:
                 fr.alpha_composite(with_alpha(self.intro.background(t), 1 - x))
             for im, xx, yy, t0 in placed:
                 reveal(fr, im, xx, yy, (t - (t0 - 0.06)) / 0.5)
-            if t < self.fly_end:                          # sticker pops out (small grow, then shrinks away)
+            if self.sticker_intro and t < self.fly_end:   # sticker pops out (small grow, then shrinks away)
                 e = (t - self.fly0) / (self.fly_end - self.fly0)
                 s0 = self.intro.logo_state(self.fly0)[0]
                 s = s0 * (1 + 0.08 * ease_out(e / 0.25)) if e < 0.25 else s0 * 1.08 * (1 - ease((e - 0.25) / 0.75))
@@ -387,11 +422,14 @@ class Hybrid(Modern):
                     place(fr, stk['im'], stk['x'], stk['y'], k, min(1, v / 0.06), rot=stk['rot'])
         return draw
 
-    # ---------------------------------------------------------------- end card: sticker + logo + comment badge
+    # ---------------------------------------------------------------- end card: sticker + logo + follow + badge
     def m_end(self):
         c = self.cfg.get('end', {})
         plate = self.dark_plate(c.get('photo', self.cfg.get('hook_photo')), 0.2)
-        lines = [text_img(l, F('Black', 80), WHITE, tracking=-2) for l in c.get('lines', ['Ποια ιστορική στιγμή', 'θες να δούμε;'])]
+        follow = ['Κάνε follow', 'για περισσότερα!']     # every video ends on the follow ask
+        lines = [text_img(l, F('Black', 80), ACC if (l == follow[1] and 'lines' not in c) else WHITE, tracking=-2)
+                 for l in c.get('lines', follow)]
+        badge = self.cfg.get('cta_badge', '') is not None  # "cta_badge": null = no comment badge
         T0 = self.t_end
         self.events += [(T0 + 0.2, 'boom'), (T0 + 0.85, 'pop')]
 
@@ -406,7 +444,7 @@ class Hybrid(Modern):
                 place(fr, self.k_big, XC, 800, p)
             for i, im in enumerate(lines):
                 reveal(fr, im, XC - im.width / 2, 880 + i * 88, (u - 0.45 - 0.12 * i) / 0.5)
-            p = ease_out_back((u - 0.85) / 0.5, 2.0)
+            p = ease_out_back((u - 0.85) / 0.5, 2.0) if badge else 0
             if p > 0.02:
                 pulse = 1 + 0.035 * math.sin(2 * math.pi * 1.6 * u)
                 place(fr, self.badge_glow, XC, 1125, p * pulse, 0.6)
