@@ -19,10 +19,52 @@ import sys, os, math, random
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageChops
 from make_video import (HERE, W, H, FPS, ease, ease_out, ease_out_back, with_alpha, place, glow_of, fnt, Intro,
-                        calendar_icon, LIME, sfx_ding, sfx_boom)
+                        calendar_icon, LIME, sfx_ding, sfx_boom, band_noise, env_t)
 from make_story import (Story, fit_text, plain_text, emoji_img, tile_parts, odometer_strip, digit_tile, roll, step_value,
                         shade, norm, sfx_confetti, XC, YELLOW, TEXT_W, STICKER_Y, STICKER_S, LOGO_Y)
 from make_modern import Modern, Photo, F, text_img, reveal, expo, shadowed, BG, WHITE, MUTED, ACC, INK, M, TR
+
+
+def sfx_click(dur=0.09):
+    """Short UI tap: a crisp transient with a little body."""
+    t = env_t(dur)
+    return band_noise(dur, 1800, 9000) * np.exp(-t * 170) * 0.8 + np.sin(2 * np.pi * 900 * t) * np.exp(-t * 80) * 0.5
+
+
+def sfx_notify(dur=1.0):
+    """Bright two-note chime (E6 -> B6), like an app notification."""
+    t = env_t(dur)
+
+    def note(f, t0):
+        tt = np.clip(t - t0, 0, None)
+        tone = sum(g * np.sin(2 * np.pi * f * k * tt) for k, g in ((1, 1.0), (2, 0.35), (3, 0.12)))
+        return (t >= t0) * tone * np.exp(-tt * 6.5) * np.clip(tt / 0.004, 0, 1)
+    return note(1318.5, 0.0) * 0.55 + note(1975.5, 0.11) * 0.6
+
+
+def _pill(w, h, fill, outline=None, top=None):
+    """Rounded button with a soft top highlight."""
+    im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle((0, 0, w - 1, h - 1), h // 2, fill=fill + (255,), outline=outline and outline + (255,),
+                        width=5 if outline else 0)
+    if top:
+        hi = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+        ImageDraw.Draw(hi).rounded_rectangle((8, 6, w - 9, h // 2), h // 4, fill=top)
+        im.alpha_composite(hi.filter(ImageFilter.GaussianBlur(4)))
+    return im
+
+
+def _icon(kind, size, color, width=10):
+    """Plus or check mark, drawn (crisper than an emoji at this size)."""
+    im = Image.new('RGBA', (size * 4, size * 4), (0, 0, 0, 0))
+    d, s, w = ImageDraw.Draw(im), size * 4, width * 4
+    if kind == 'plus':
+        d.line((s / 2, w / 2, s / 2, s - w / 2), fill=color + (255,), width=w)
+        d.line((w / 2, s / 2, s - w / 2, s / 2), fill=color + (255,), width=w)
+    else:
+        d.line([(w / 2, s * 0.55), (s * 0.38, s - w), (s - w / 2, w)], fill=color + (255,), width=w, joint='curve')
+    return im.resize((size, size), Image.LANCZOS)
 
 
 class Hybrid(Modern):
@@ -56,7 +98,8 @@ class Hybrid(Modern):
 
     def sfx_lib(self):
         lib = super().sfx_lib()
-        lib.update({'ding': (sfx_ding, 0.75), 'boom_big': (lambda: sfx_boom(1.4), 0.6), 'confetti': (sfx_confetti, 0.45)})
+        lib.update({'ding': (sfx_ding, 0.75), 'boom_big': (lambda: sfx_boom(1.4), 0.6), 'confetti': (sfx_confetti, 0.45),
+                    'click': (sfx_click, 0.45), 'notify': (sfx_notify, 0.55)})
         return lib
 
     # ---------------------------------------------------------------- intro: the hook (optionally after the sticker)
@@ -422,9 +465,165 @@ class Hybrid(Modern):
                     place(fr, stk['im'], stk['x'], stk['y'], k, min(1, v / 0.06), rot=stk['rot'])
         return draw
 
+    # ---------------------------------------------------------------- end card: follow pop-up
+    def follow_card(self, c):
+        """Static parts of the follow pop-up: card with shadow, avatar, name, both button states."""
+        CW, CH, R, pad = 760, 300, 46, 50
+        card = Image.new('RGBA', (CW, CH), (0, 0, 0, 0))
+        ImageDraw.Draw(card).rounded_rectangle((0, 0, CW - 1, CH - 1), R, fill=(250, 250, 252, 255))
+        D = 140                                            # avatar: the kouponaki icon in a lime ring
+        av = Image.new('RGBA', (D, D), (0, 0, 0, 0))
+        ImageDraw.Draw(av).ellipse((0, 0, D - 1, D - 1), fill=ACC + (255,))
+        ImageDraw.Draw(av).ellipse((8, 8, D - 9, D - 9), fill=(16, 22, 26, 255))
+        icon = Image.open(os.path.join(HERE, 'assets', 'kouponaki_logo.png')).convert('RGBA').crop((0, 0, 134, 84))
+        icon = icon.resize((104, int(84 * 104 / 134)), Image.LANCZOS)
+        av.alpha_composite(icon, ((D - icon.width) // 2, (D - icon.height) // 2))
+        card.alpha_composite(av, (30, 30))
+        name = text_img(c.get('follow_name', 'kouponaki.com'), F('Black', 52), INK, tracking=-1)
+        card.alpha_composite(name, (196, 44))
+        sub_txt = c.get('follow_sub', 'Για περισσότερα «Ήξερες ότι;»')
+        size = 31
+        while size > 20:
+            sub = text_img(sub_txt, F('Bold', size), (112, 118, 128))
+            if sub.width <= CW - 196 - 24:
+                break
+            size -= 1
+        card.alpha_composite(sub, (196, 112))
+        bw, bh = CW - 60, 100
+        txt_f = fnt('FiraSansExtraCondensed-Black', 58)
+        follow = _pill(bw, bh, ACC, top=(255, 255, 255, 60))
+        t1, i1 = plain_text(c.get('follow_button', 'ΚΑΝΕ FOLLOW'), txt_f, INK), _icon('plus', 40, INK)
+        x = (bw - (i1.width + 18 + t1.width)) // 2
+        follow.alpha_composite(i1, (x, (bh - i1.height) // 2))
+        follow.alpha_composite(t1, (x + i1.width + 18, (bh - t1.height) // 2 + 2))
+        done = _pill(bw, bh, (22, 26, 32), outline=ACC)
+        t2, i2 = plain_text(c.get('following_button', 'FOLLOWING'), txt_f, ACC), _icon('check', 42, ACC)
+        x = (bw - (i2.width + 18 + t2.width)) // 2
+        done.alpha_composite(i2, (x, (bh - i2.height) // 2))
+        done.alpha_composite(t2, (x + i2.width + 18, (bh - t2.height) // 2 + 2))
+        shadow = Image.new('L', (CW + 2 * pad, CH + 2 * pad), 0)
+        ImageDraw.Draw(shadow).rounded_rectangle((pad, pad + 18, pad + CW, pad + CH + 18), R, fill=140)
+        badge_plus, badge_ok = Image.new('RGBA', (52, 52), (0, 0, 0, 0)), Image.new('RGBA', (52, 52), (0, 0, 0, 0))
+        ImageDraw.Draw(badge_plus).ellipse((0, 0, 51, 51), fill=(255, 59, 92, 255), outline=(250, 250, 252, 255), width=5)
+        badge_plus.alpha_composite(_icon('plus', 24, WHITE, 6), (14, 14))
+        ImageDraw.Draw(badge_ok).ellipse((0, 0, 51, 51), fill=ACC + (255,), outline=(250, 250, 252, 255), width=5)
+        badge_ok.alpha_composite(_icon('check', 26, INK, 6), (13, 14))
+        glow, gpad = glow_of(card, 26, ACC)
+        return dict(card=card, shadow=shadow.filter(ImageFilter.GaussianBlur(22)), pad=pad, CW=CW, CH=CH,
+                    follow=follow, done=done, btn=(30, 180, bw, bh), plus=badge_plus, ok=badge_ok,
+                    av_badge=(30 + D - 40, 30 + D - 44), glow=glow, gpad=gpad)
+
+    def m_end_follow(self, c):
+        """End card: «Ήξερες ότι;» sticker, comment badge, and a follow pop-up that gets 'tapped' (sound + burst)."""
+        plate = self.dark_plate(c.get('photo', self.cfg.get('hook_photo')), 0.2)
+        T0, L = self.t_end, len(self.vo) - 1
+        badge = self.cfg.get('cta_badge', '') is not None
+
+        def word_t(w, default):
+            try:
+                return self.at(L, {'word': w})
+            except ValueError:
+                return default
+        tS = word_t('σχόλια', T0 + 0.85)
+        tF = max(T0 + 0.5, word_t(c.get('follow_word', 'φόλοου'), T0 + 1.2) - 0.3)   # pop-up as "follow" is said
+        tP, tTap = tF + 0.55, tF + 1.05
+        tOn = tTap + 0.06
+        self.total = max(self.total, tOn + 1.7)            # room for the whole animation
+        k = self.follow_card(c)
+        CX, CY = XC, c.get('follow_y', 860)
+        bx, by, bw, bh = k['btn']
+        bc = (CX - k['CW'] / 2 + bx + bw / 2, CY - k['CH'] / 2 + by + bh / 2)        # button centre on screen
+        target = (bc[0] + 240, bc[1] + 10)              # right part of the button, clear of the text
+        pointer, bell = emoji_img('👆', 132), emoji_img('🔔', 78)
+        floaters = [(emoji_img(e, 64), rnd) for e, rnd in zip('💚⚽🔥💛⭐', random.Random(11).sample(range(-300, 300, 30), 5))]
+        rng = random.Random(5)
+        sparks = [dict(a=rng.uniform(0, 2 * math.pi), v=rng.uniform(520, 1150), r=rng.uniform(5, 12),
+                       col=rng.choice([ACC, ACC, YELLOW, WHITE]), star=rng.random() < 0.35) for _ in range(34)]
+        if badge:
+            self.events.append((tS, 'pop'))
+        self.events += [(T0 + 0.2, 'boom'), (tF, 'whoosh'), (tF + 0.06, 'pop'), (tP, 'whoosh'),
+                        (tTap, 'click'), (tOn, 'notify'), (tOn + 0.02, 'confetti')]
+
+        def draw(fr, t):
+            fr.paste(plate, (0, 0))
+            u = t - T0
+            p = ease_out_back((u - 0.05) / 0.55)            # the sticker, as on every end card
+            if p > 0.02:
+                fr.paste(self.intro.draw_sticker(fr.copy(), 0, XC, 430, 0.56 * p, glow=min(1, u / 0.5)))
+            if badge:
+                p = ease_out_back((t - tS) / 0.5, 2.0)
+                if p > 0.02:
+                    pulse = 1 + 0.035 * math.sin(2 * math.pi * 1.6 * (t - tS))
+                    place(fr, self.badge_glow, XC, 1200, p * pulse, 0.6)
+                    place(fr, self.badge, XC, 1200, p * pulse)
+            v = t - tF
+            if v <= 0:
+                return
+            card = k['card'].copy()
+            on = t >= tOn
+            press = 1 - 0.07 * math.sin(math.pi * min(1, max(0, (t - tTap) / 0.16)))
+            btn = k['done'] if on else k['follow']
+            if press < 0.999:
+                btn = btn.resize((int(bw * press), int(bh * press)), Image.BILINEAR)
+            card.alpha_composite(btn, (int(bx + (bw - btn.width) / 2), int(by + (bh - btn.height) / 2)))
+            if on:                                          # the avatar's red plus turns into a check
+                q = ease_out_back((t - tOn) / 0.35, 2.2)
+                b = k['ok'].resize((max(1, int(52 * q)), max(1, int(52 * q))), Image.BILINEAR)
+                card.alpha_composite(b, (int(k['av_badge'][0] + 26 - b.width / 2), int(k['av_badge'][1] + 26 - b.height / 2)))
+            else:
+                card.alpha_composite(k['plus'], k['av_badge'])
+            top = CY - k['CH'] / 2
+            if on:                                          # emoji pop out from behind the card and float up
+                for i, (em, dx) in enumerate(floaters):
+                    w = t - tOn - 0.07 * i
+                    if 0 < w < 1.5:
+                        x = CX + dx * 1.05 + 22 * math.sin(w * 5 + i)
+                        y = top + 50 - 185 * ease_out(min(1, w / 1.5))
+                        place(fr, em, x, y, 0.85 + 0.15 * ease_out_back(min(1, w / 0.4), 2.5), 1 - max(0, (w - 1.0) / 0.5))
+            comp = Image.new('RGBA', k['shadow'].size, (0, 0, 0, 0))
+            comp.paste((0, 0, 0, 255), (0, 0), k['shadow'])
+            comp.alpha_composite(card, (k['pad'], k['pad']))
+            s = ease_out_back(v / 0.45, 1.9)
+            if on:                                          # a little bump when it switches to FOLLOWING
+                s *= 1 + 0.045 * math.sin(math.pi * min(1, (t - tOn) / 0.3))
+            bob = 5 * math.sin(2 * math.pi * 0.7 * max(0, v - 0.45))
+            rot = -7 * (1 - ease_out(min(1, v / 0.45)))
+            if on:
+                g = math.sin(math.pi * min(1, (t - tOn) / 0.9))
+                place(fr, k['glow'], CX, CY + bob, s, 0.9 * g)
+            place(fr, comp, CX, CY + bob, s, min(1, v / 0.12), rot)
+            if v > 0.25:                                    # bell on the corner; it rings after the follow
+                ring = 22 * math.sin(2 * math.pi * 5 * (t - tOn)) * math.exp(-3 * (t - tOn)) if on else 0
+                place(fr, bell, CX + k['CW'] / 2 - 40, CY - k['CH'] / 2 + 2 + bob, ease_out_back((v - 0.25) / 0.4, 2.2), 1, ring)
+            if tP <= t < tOn + 0.75:                        # a finger comes in, taps, and leaves
+                e = ease_out(min(1, (t - tP) / 0.4))
+                x = target[0] + 230 * (1 - e)
+                y = target[1] + 330 * (1 - e) + pointer.height * 0.42
+                sc = 1 - 0.14 * math.sin(math.pi * min(1, max(0, (t - tTap) / 0.16)))
+                fade = 1 - min(1, max(0, (t - tOn - 0.35) / 0.4))
+                place(fr, pointer, x, y + 40 * (1 - fade), sc, fade, 8)
+            if on and t - tOn < 1.1:                        # burst of sparks from the button
+                w = t - tOn
+                d = ImageDraw.Draw(fr)
+                for sp in sparks:
+                    dist = sp['v'] * (1 - math.exp(-3.2 * w)) / 3.2
+                    x = target[0] + math.cos(sp['a']) * dist * 1.15
+                    y = target[1] + math.sin(sp['a']) * dist + 380 * w * w
+                    r = sp['r'] * (1 - w / 1.1)
+                    a = int(255 * max(0, 1 - w / 1.1))
+                    if sp['star']:
+                        pts = [(x + math.cos(i * math.pi / 4) * (r * 1.8 if i % 2 == 0 else r * 0.6),
+                                y + math.sin(i * math.pi / 4) * (r * 1.8 if i % 2 == 0 else r * 0.6)) for i in range(8)]
+                        d.polygon(pts, fill=sp['col'] + (a,))
+                    else:
+                        d.ellipse((x - r, y - r, x + r, y + r), fill=sp['col'] + (a,))
+        return draw
+
     # ---------------------------------------------------------------- end card: sticker + logo + follow + badge
     def m_end(self):
         c = self.cfg.get('end', {})
+        if c.get('style', 'classic' if 'lines' in c else 'follow') == 'follow':
+            return self.m_end_follow(c)
         plate = self.dark_plate(c.get('photo', self.cfg.get('hook_photo')), 0.2)
         follow = ['Κάνε follow', 'για περισσότερα!']     # every video ends on the follow ask
         lines = [text_img(l, F('Black', 80), ACC if (l == follow[1] and 'lines' not in c) else WHITE, tracking=-2)
