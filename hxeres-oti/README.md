@@ -120,6 +120,19 @@ pill λεζάντες, swipe, χωρίς μπάρα προόδου) μαζί μ�
   - Ρυθμίσεις στο `"end"`: `follow_name`, `follow_sub`, `follow_button`, `follow_word`, `follow_y`.
     Με `"cta_badge": null` κρύβεται το badge των σχολίων.
   - Το παλιό end card, με κείμενο στη θέση του pop-up, μένει για τα configs που έχουν `"end": {"lines": [...]}`.
+- **Pop-out παίκτη:** Ο παίκτης «βγαίνει» από τη φωτογραφία. Πλησιάζει πιο γρήγορα από το φόντο (βάθος) και
+  μένει φωτεινός πάνω από το σκούρο κάτω μέρος της φωτογραφίας. Αν θες, μπαίνει και μια τεράστια λέξη πίσω του.
+  1. Κόψε τον παίκτη: `python3 make_cutout.py posts/x.jpg --rect X0 Y0 X1 Y1` ή `--poly X,Y X,Y ...`
+     (πρόχειρο περίγραμμα, καλύτερο όταν πίσω έχει LED). Με `--fg X,Y,R` / `--bg X,Y,R` διορθώνεις σημεία και
+     με `--preview out.png` ελέγχεις το αποτέλεσμα. Τα αρχεία γράφονται στο `posts/cutouts/`.
+  2. Στο config: `"popout": true` στη σκηνή `score` ή σε φωτογραφία του `gallery`. Για λέξη πίσω του:
+     `"behind": {"text": "ΣΑΝΓΚΟΪ", "y": 330, "size": 340}`.
+- **Εξώφυλλο:** Μαζί με το βίντεο βγαίνει και το `<βίντεο>_cover.png` (1080×1920). Έχει sticker, φωτογραφία
+  (με pop-out και λέξη πίσω αν θες), μεγάλο τίτλο από το hook και logo. Όλα χωράνε στο 3:4 που δείχνουν τα
+  προφίλ. Ρυθμίσεις στο `"cover"`: `photo`, `popout`, `behind`, `photo_y`, `title`, `accent`, `badge`. Μόνο το
+  εξώφυλλο: `python3 make_hybrid.py configs/x.json --cover out.png`.
+- **Ήχος:** Η φωνή είναι μπροστά και δυνατή. Τα ηχητικά εφέ είναι πιο χαμηλά και κάνουν πιο πολύ χώρο στη φωνή.
+  Το mix βγαίνει στα −9,5 LUFS (το παλιό ήταν στα −11), με limiter ώστε να μη «σπάει».
 
 ```
 python3 make_hybrid.py configs/apollon_legia_hybrid.json ../videos/hxeres_oti_apollon_legia_hybrid.mp4

@@ -190,7 +190,8 @@
         "x": 765,
         "y": 560,
         "rotate": 9
-      }
+      },
+      "popout": true
     },
     {
       "type": "gallery",
@@ -211,7 +212,13 @@
           "focus": [
             0.56,
             0.42
-          ]
+          ],
+          "popout": true,
+          "behind": {
+            "text": "ΣΑΝΓΚΟΪ",
+            "y": 330,
+            "size": 340
+          }
         }
       ],
       "label": {
@@ -300,5 +307,21 @@
   "end": {
     "photo": "posts/apollon_legia_sangoy_celebration.jpg"
   },
-  "cta_badge": "ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ"
+  "cta_badge": "ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ",
+  "cover": {
+    "photo": "posts/apollon_legia_sangoy_celebration.jpg",
+    "popout": true,
+    "focus": [
+      0.56,
+      0.42
+    ],
+    "photo_y": 380,
+    "ph": 1150,
+    "behind": {
+      "text": "ΣΑΝΓΚΟΪ",
+      "y": 600,
+      "size": 330
+    },
+    "sticker_y": 335
+  }
 }

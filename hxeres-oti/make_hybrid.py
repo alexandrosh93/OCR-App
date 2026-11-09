@@ -15,14 +15,19 @@ opening, popping out when the photos start so it never covers them),
 the mascot, chunky stickers (ΙΣΤΟΡΙΚΟ!, ΣΑΝΓΚΟΪ 56', VS ΛΕΓΚΙΑ), team plates with the crest and flip-clock tiles,
 the crest on rotating rays, confetti, emoji (✈️ 🇨🇾 🇵🇱 👑), floating particles and the «ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ 👇» badge.
 """
-import sys, os, math, random
+import sys, os, math, random, subprocess, wave
 import numpy as np
-from PIL import Image, ImageDraw, ImageFilter, ImageChops
+from PIL import Image, ImageDraw, ImageFilter, ImageChops, ImageEnhance
 from make_video import (HERE, W, H, FPS, ease, ease_out, ease_out_back, with_alpha, place, glow_of, fnt, Intro,
                         calendar_icon, LIME, sfx_ding, sfx_boom, band_noise, env_t)
 from make_story import (Story, fit_text, plain_text, emoji_img, tile_parts, odometer_strip, digit_tile, roll, step_value,
                         shade, norm, sfx_confetti, XC, YELLOW, TEXT_W, STICKER_Y, STICKER_S, LOGO_Y)
-from make_modern import Modern, Photo, F, text_img, reveal, expo, shadowed, BG, WHITE, MUTED, ACC, INK, M, TR
+from make_modern import Modern, Photo, F, text_img, reveal, expo, inout, shadowed, BG, WHITE, MUTED, ACC, INK, M, TR
+from make_video import SR, CACHE
+from make_story import caps
+
+LOUDNESS = -9.5          # final mix, LUFS (stereo): a loud, voice-first social video (the old mix was -11)
+PEAK = 0.82              # limiter ceiling (about -1.7 dBFS: true peak stays under -1 dBTP)
 
 
 def sfx_click(dur=0.09):
@@ -67,6 +72,38 @@ def _icon(kind, size, color, width=10):
     return im.resize((size, size), Image.LANCZOS)
 
 
+def lufs(path):
+    """Integrated loudness of a file (ffmpeg ebur128)."""
+    r = subprocess.run(['ffmpeg', '-hide_banner', '-nostats', '-i', path, '-af', 'ebur128', '-f', 'null', '-'],
+                       capture_output=True, text=True).stderr
+    return float(r[r.rfind('Summary:'):].split('I:')[1].split('LUFS')[0])
+
+
+class PopPhoto(Photo):
+    """Photo with its player cut out (make_cutout.py). The background (player filled in) and the player zoom at
+    different speeds, which gives depth, and the player is drawn over the photo's bottom fade, so he pops out."""
+
+    def __init__(self, fg, bg, ph, focus=(0.5, 0.45), margin=1.15):
+        super().__init__(bg, ph, focus, margin)
+        k = max(W * margin / fg.width, ph * margin / fg.height)
+        size = (int(fg.width * k) + 1, int(fg.height * k) + 1)
+        rgb = fg.convert('RGB').resize(size, Image.LANCZOS)
+        if k > 1.3:
+            rgb = rgb.filter(ImageFilter.UnsharpMask(radius=2, percent=60, threshold=2))
+        rgb = ImageEnhance.Contrast(ImageEnhance.Color(rgb).enhance(0.9)).enhance(1.05)
+        rgb.putalpha(fg.getchannel('A').resize(size, Image.LANCZOS))
+        self.fg = rgb
+
+    def fg_at(self, u, z0=1.0, z1=1.07, depth=0.07):
+        """The player layer: zooms `depth` more than the background over the scene."""
+        z = z0 + (z1 - z0 + depth) * inout(min(max(u, 0), 1))
+        cw, ch = self.fg.size
+        ww, wh = W / z, self.ph / z
+        cx = min(max(self.focus[0] * cw, ww / 2), cw - ww / 2)
+        cy = min(max(self.focus[1] * ch, wh / 2), ch - wh / 2)
+        return self.fg.resize((W, self.ph), Image.BILINEAR, box=(cx - ww / 2, cy - wh / 2, cx + ww / 2, cy + wh / 2))
+
+
 class Hybrid(Modern):
     def __init__(self, cfg_path):
         self.intro = Intro()
@@ -87,6 +124,52 @@ class Hybrid(Modern):
         if not self.sticker_intro:                # no sticker intro: the voice starts right away
             self.HOOK_START, self.INTRO_MIN = 0.15, 0.0
         super().timeline()
+
+    # ---------------------------------------------------------------- pop-out photos
+    def photo_of(self, path, ph, focus=(0.5, 0.45), pop=False):
+        """Photo, or PopPhoto when "popout" is on and make_cutout.py has cut the player out of it."""
+        if pop:
+            name = os.path.splitext(os.path.basename(path))[0]
+            fg, bg = (os.path.join(HERE, 'posts', 'cutouts', f'{name}_{x}') for x in ('fg.png', 'bg.jpg'))
+            if os.path.exists(fg) and os.path.exists(bg):
+                return PopPhoto(Image.open(fg).convert('RGBA'), Image.open(bg).convert('RGB'), ph, focus)
+            print(f'popout: no cutout for {path} (run make_cutout.py), plain photo used', file=sys.stderr)
+        return Photo(self.load_photo(path), ph, focus)
+
+    def fg_ramp(self, ph):
+        """The popped-out player stays solid down to near the bottom of the photo, then fades in 0.24 of a frame."""
+        if not hasattr(self, '_ramps'):
+            self._ramps = {}
+        if ph not in self._ramps:
+            a = np.clip((ph - 40 - np.arange(ph, dtype=np.float32)) / 240, 0, 1)
+            self._ramps[ph] = Image.fromarray((np.repeat(a[:, None], W, axis=1) * 255).astype(np.uint8), 'L')
+        return self._ramps[ph]
+
+    def draw_pop(self, fr, P, u, dim=0.0, y=0, h=None, alpha=1.0):
+        """The cut-out player over the (faded) photo: a soft shadow, and brighter than the dimmed photo."""
+        fg = P.fg_at(u)
+        a = ImageChops.multiply(fg.getchannel('A'), self.fg_ramp(P.ph))
+        if alpha < 1:
+            a = a.point(lambda v: int(v * alpha))
+        rgb = fg.convert('RGB')
+        if dim > 0:
+            rgb = Image.blend(rgb, Image.new('RGB', rgb.size, BG), dim * 0.3)
+        sh = Image.new('RGBA', rgb.size, (0, 0, 0, 0))
+        sh.putalpha(a.filter(ImageFilter.GaussianBlur(18)).point(lambda v: int(v * 0.6)))
+        rgb.putalpha(a)
+        h = P.ph if h is None else h
+        if h < P.ph:
+            sh, rgb = sh.crop((0, 0, W, max(1, h))), rgb.crop((0, 0, W, max(1, h)))
+        fr.alpha_composite(sh, (0, y + 14))
+        fr.alpha_composite(rgb, (0, y))
+
+    def behind_img(self, b):
+        """Huge word that sits behind the popped-out player (text-behind-subject)."""
+        size = b.get('size', 330)
+        im = plain_text(b['text'], fnt('FiraSansExtraCondensed-Black', size), ACC if b.get('color') == 'acc' else WHITE)
+        if im.width > W - 40:
+            im = im.resize((W - 40, int(im.height * (W - 40) / im.width)), Image.LANCZOS)
+        return im, glow_of(im, 22, (0, 0, 0))[0]
 
     def build_end_card(self):
         """«ΓΡΑΨΕ ΣΤΑ ΣΧΟΛΙΑ 👇» badge of the current style; "cta_badge": null = no badge."""
@@ -225,7 +308,7 @@ class Hybrid(Modern):
     # ---------------------------------------------------------------- score: big photo + timeline + plates/tiles
     def m_score(self, sc, line, T):
         T1 = self.seg_end(line)
-        P = Photo(self.load_photo(sc['photo']), sc.get('ph', 1000), tuple(sc.get('focus', (0.5, 0.45))))
+        P = self.photo_of(sc['photo'], sc.get('ph', 1000), tuple(sc.get('focus', (0.5, 0.45))), sc.get('popout'))
         tl_draw = self.make_timeline(sc, line)
 
         def crest_of(key, default):
@@ -263,6 +346,8 @@ class Hybrid(Modern):
 
         def draw(fr, t):
             self.photo_bg(fr, P, (t - T) / max(T1 - T, 0.1))
+            if isinstance(P, PopPhoto):
+                self.draw_pop(fr, P, (t - T) / max(T1 - T, 0.1))
             tl_draw(fr, t)
             if badge is not None and t > badge['t']:
                 v = t - badge['t']
@@ -447,7 +532,40 @@ class Hybrid(Modern):
         return draw
 
     def m_gallery(self, sc, line, T):
-        base = super().m_gallery(sc, line, T)
+        """Photos that slide in on words (modern), optional pop-out player with a huge word behind him,
+        title lines, label, emoji and the chunky stickers of template 1."""
+        T1 = self.seg_end(line)
+        ph = sc.get('ph', 1080)
+        photos = []
+        for it in sc['photos']:
+            P = self.photo_of(it['photo'], ph, tuple(it.get('focus', (0.5, 0.45))), it.get('popout'))
+            t0 = self.at(line, it['at'])
+            bh = None
+            if it.get('behind'):
+                b = it['behind']
+                im, glow = self.behind_img(b)
+                bh = dict(im=im, glow=glow, t=self.at(line, b['at']) if 'at' in b else t0 + 0.3, y=b.get('y', 300))
+                self.events.append((bh['t'], 'whoosh'))
+            photos.append(dict(P=P, t=t0, behind=bh))
+        y0 = sc.get('y', 960)
+        lab = self.label_img(sc['label']['text'], ACC) if sc.get('label') else None
+        tLab = self.at(line, sc['label']['at']) if lab is not None else None
+        titles, y = [], y0 + 44
+        for tl in sc.get('title', []):
+            size = tl.get('size', 160)
+            im = text_img(tl['text'], F('Black', size), ACC if tl.get('color') == 'acc' else WHITE, tracking=-int(size * 0.03))
+            im, pad = shadowed(im)
+            titles.append((im, self.at(line, tl['at']), y - pad))
+            y += int(size * 1.0)
+            self.events.append((titles[-1][1], 'thud' if len(titles) == 1 else 'pop'))
+        if lab is not None:
+            self.events.append((tLab, 'pop'))
+        self.events += [(p['t'], 'whoosh') for p in photos[1:]]
+        es = sc.get('emoji_sticker')
+        eimg = emoji_img(es['emoji'], es.get('size', 170)) if es else None
+        tE = self.at(line, es['at']) if es else None
+        if es:
+            self.events.append((tE, 'pop'))
         stks = []                                         # chunky stickers of template 1
         for st in ([sc['sticker']] if sc.get('sticker') else []) + sc.get('stickers', []):
             simg = fit_text(st['text'], st.get('color', 'yellow'), st.get('max_w', 760), st.get('max_size', 120))
@@ -456,13 +574,43 @@ class Hybrid(Modern):
             self.events.append((stks[-1]['t'], 'thud'))
 
         def draw(fr, t):
-            base(fr, t)
+            u = (t - T) / max(T1 - T, 0.1)
+            cur = max([i for i, p in enumerate(photos) if t >= p['t']] or [0])
+            p = photos[cur]
+            img = p['P'].at(u)
+            v = t - p['t']
+            yy = 0
+            if cur > 0 and v < 0.45:                      # next photo slides up inside the photo area
+                prev = photos[cur - 1]['P'].at(u)
+                yy = int(ph * (1 - expo(v / 0.45)))
+                prev.paste(img.crop((0, 0, W, ph - yy)), (0, yy))
+                ImageDraw.Draw(prev).rectangle((0, max(0, yy - 3), W, yy + 3), fill=ACC)
+                img = prev
+            fr.paste(img, (0, 0))
+            fr.alpha_composite(self.shade_for(ph))
+            b = p['behind']
+            if b is not None and t >= b['t']:             # the word behind the player rises in
+                w = t - b['t']
+                e = ease_out(min(1, w / 0.5))
+                yb = b['y'] + yy + 110 * (1 - e)
+                place(fr, b['glow'], W / 2, yb, 1.08 - 0.08 * e, 0.55 * min(1, w / 0.3))
+                place(fr, b['im'], W / 2, yb, 1.08 - 0.08 * e, min(1, w / 0.25))
+            if isinstance(p['P'], PopPhoto):
+                self.draw_pop(fr, p['P'], u, y=yy, h=ph - yy)
+            if lab is not None:
+                reveal(fr, lab, M, y0, (t - tLab) / 0.45)
+            for im, ta, yt in titles:
+                reveal(fr, im, M - 4 - 24, yt, (t - (ta - 0.05)) / 0.55)
+            if es and t > tE:
+                w = t - tE
+                place(fr, eimg, es['x'], es['y'], ease_out_back(w / 0.3, 2.4), min(1, w / 0.08),
+                      rot=es.get('rot', 12) + 6 * math.sin(w * 9) * math.exp(-w * 2))
             for stk in stks:
                 if t > stk['t']:
-                    v = t - stk['t']
-                    k = 1 + 1.3 * (1 - ease_out(v / 0.18, 3))
-                    place(fr, stk['glow'], stk['x'], stk['y'], k, 0.8 * min(1, v / 0.1), rot=stk['rot'])
-                    place(fr, stk['im'], stk['x'], stk['y'], k, min(1, v / 0.06), rot=stk['rot'])
+                    w = t - stk['t']
+                    k = 1 + 1.3 * (1 - ease_out(w / 0.18, 3))
+                    place(fr, stk['glow'], stk['x'], stk['y'], k, 0.8 * min(1, w / 0.1), rot=stk['rot'])
+                    place(fr, stk['im'], stk['x'], stk['y'], k, min(1, w / 0.06), rot=stk['rot'])
         return draw
 
     # ---------------------------------------------------------------- end card: follow pop-up
@@ -658,6 +806,115 @@ class Hybrid(Modern):
             place(fr, self.k_small, 60 + self.k_small.width / 2, LOGO_Y - 110 * (1 - ease_out(min(1, u / 0.5))), 1, min(1, u / 0.3))
         return fr                                         # no «Ήξερες ότι;» sticker up here: it would cover the photos
 
+    # ---------------------------------------------------------------- cover image
+    def make_cover(self, out):
+        """Cover (1080x1920) for TikTok / Reels: photo (pop-out player + huge word behind him if set), the
+        «Ήξερες ότι;» sticker, a big title and the logo. All of it sits inside the middle 3:4 the profile grids show."""
+        c = self.cfg.get('cover') or {}
+        path = c.get('photo', self.cfg.get('hook_photo'))
+        py = c.get('photo_y', 0)                          # photo lower down = room for the sticker on top
+        ph = c.get('ph', 1300 if py == 0 else 1150)
+        P = self.photo_of(path, ph, tuple(c.get('focus', self.cfg.get('hook_focus', (0.5, 0.42)))), c.get('popout'))
+        fr = self.dark_plate(path, 0.18).copy()
+        img = P.at(0.0).convert('RGBA')
+        y = np.arange(ph, dtype=np.float32)
+        a = np.minimum(np.clip(y / 220, 0, 1) if py else np.ones(ph, np.float32), np.clip((ph - y) / 420, 0, 1))
+        img.putalpha(Image.fromarray((np.repeat(a[:, None], W, axis=1) * 255).astype(np.uint8), 'L'))
+        fr.alpha_composite(img, (0, py))
+        if c.get('behind'):
+            im, glow = self.behind_img(c['behind'])
+            yb = c['behind'].get('y', 640)
+            place(fr, glow, W / 2, yb, 1, 0.55)
+            place(fr, im, W / 2, yb)
+        if isinstance(P, PopPhoto):
+            self.draw_pop(fr, P, 0.0, y=py)
+        fr = self.intro.draw_sticker(fr.copy(), 0, W / 2, c.get('sticker_y', 345), c.get('sticker_scale', 0.5), glow=1.0)
+        hook = self.cfg.get('hook')
+        hook = hook['text'] if isinstance(hook, dict) else (hook or '')
+        words = (c.get('title') or caps(hook)).split()
+        acc = {norm(w) for w in c.get('accent', self.cfg.get('hook_accent', []))}
+        for size in range(176, 96, -6):                   # biggest size that fits in 3 lines
+            f = fnt('FiraSansExtraCondensed-Black', size)
+            ims = [plain_text(w, f, ACC if norm(w) in acc else WHITE) for w in words]
+            gap, lines, cur, cw = int(size * 0.22), [], [], 0
+            for im in ims:
+                if cur and cw + gap + im.width > W - 120:
+                    lines.append(cur)
+                    cur, cw = [], 0
+                cw += (gap if cur else 0) + im.width
+                cur.append(im)
+            lines.append(cur)
+            if len(lines) <= 3:
+                break
+        lh = int(size * 0.98)
+        top = c.get('title_bottom', 1545) - lh * len(lines)
+        block = Image.new('RGBA', (W, lh * len(lines) + 40), (0, 0, 0, 0))
+        for i, row in enumerate(lines):
+            x = (W - (sum(im.width for im in row) + gap * (len(row) - 1))) // 2
+            for im in row:
+                block.alpha_composite(im, (x, i * lh + 20))
+                x += im.width + gap
+        glow, gp = glow_of(block, 26, (0, 0, 0))
+        fr.alpha_composite(with_alpha(glow, 0.8), (-gp, top - 20 - gp))
+        fr.alpha_composite(block, (0, top - 20))
+        if c.get('badge'):
+            place(fr, self.pill_img(c['badge'], 44), W / 2, top - 62)
+        place(fr, self.k_small, W / 2, c.get('logo_y', 1625))
+        fr.convert('RGB').save(out)
+        print(f'cover: {out}')
+
+    # ---------------------------------------------------------------- loud, voice-first mix
+    def audio(self):
+        """Voice first and loud: the SFX sit lower and duck more under the voice, and the mix is brought to
+        LOUDNESS (LUFS) through a look-ahead peak limiter. (A compressor did not help: the TTS voice is already even,
+        only its peaks stand out, and those are the limiter's job.)"""
+        n = int((self.total + 2) * SR)
+        vo, sfx = np.zeros(n, np.float32), np.zeros(n, np.float32)
+
+        def add(t, x, g, dst):
+            i = int(max(t, 0) * SR)
+            x = x[:max(0, n - i)]
+            dst[i:i + len(x)] += x * g
+
+        lib = self.sfx_lib()
+        for t, kind in self.events:
+            f, g = lib[kind]
+            add(t, f(), g, sfx)
+        for t, (v, _) in zip(self.vo_starts, self.vo):
+            add(t, v, 1.0, vo)
+
+        def smooth(x, k):
+            c = np.concatenate([[0.0], np.cumsum(x, dtype=np.float64)])
+            y = (c[k:] - c[:-k]) / k
+            return np.concatenate([np.full(k // 2, y[0]), y, np.full(len(x) - len(y) - k // 2, y[-1])]).astype(np.float32)
+        rms = np.sqrt(np.maximum(smooth(vo ** 2, int(0.06 * SR)), 0))
+        duck = smooth(1 - 0.65 * np.clip(rms / 0.05, 0, 1), int(0.12 * SR))
+        out = (vo + 0.75 * sfx * duck)[:int(self.total * SR)]
+        fade = int(0.12 * SR)
+        out[-fade:] *= np.linspace(1, 0, fade)
+        out *= 0.95 / max(np.abs(out).max(), 1e-6)
+        raw, path = os.path.join(CACHE, 'hybrid_mix_raw.wav'), os.path.join(CACHE, 'hybrid_mix.wav')
+        with wave.open(raw, 'wb') as w:
+            w.setnchannels(1), w.setsampwidth(2), w.setframerate(SR)
+            w.writeframes((out * 32767).astype(np.int16).tobytes())
+        gain = LOUDNESS - (lufs(raw) + 3.01)               # the mono mix plays on both channels: +3 dB
+        for _ in range(6):                                # the limiter takes part of the gain back: push and redo
+            subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', raw, '-af',
+                            f'volume={gain:.2f}dB,alimiter=limit={PEAK}:attack=3:release=60:level=false:latency=true,'
+                            'pan=stereo|c0=c0|c1=c0',             # same signal on both sides (-ac 2 would drop 3 dB)
+                            '-ar', str(SR), '-c:a', 'pcm_s16le', path], check=True)
+            got = lufs(path)
+            if abs(got - LOUDNESS) < 0.3:
+                break
+            gain = min(10.0, gain + 2.5 * (LOUDNESS - got))     # ~0.3 dB louder per dB of drive here
+        print(f'mix: {got:.1f} LUFS (target {LOUDNESS})')
+        return path
+
+    def render(self, out):
+        super().render(out)
+        if self.cfg.get('cover', {}) is not False:        # "cover": false = no cover image
+            self.make_cover(os.path.splitext(out)[0] + '_cover.png')
+
     def frame(self, n):
         t = n / FPS
         k = max(i for i, s in enumerate(self.starts) if s <= t + 1e-9)
@@ -674,7 +931,9 @@ class Hybrid(Modern):
 
 if __name__ == '__main__':
     st = Hybrid(sys.argv[1])
-    if sys.argv[2] == '--preview':
+    if sys.argv[2] == '--cover':
+        st.make_cover(sys.argv[3])
+    elif sys.argv[2] == '--preview':
         ts = [float(x) for x in sys.argv[3].split(',')]
         g = Image.new('RGB', (360 * len(ts), 640))
         for i, t in enumerate(ts):
