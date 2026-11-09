@@ -808,7 +808,7 @@ class Hybrid(Modern):
 
     # ---------------------------------------------------------------- cover image
     def make_cover(self, out):
-        """Cover (1080x1920) for TikTok / Reels: photo (pop-out player + huge word behind him if set), the
+        """Only on request (--cover): cover (1080x1920) for TikTok / Reels: photo (pop-out player + huge word behind him if set), the
         «Ήξερες ότι;» sticker, a big title and the logo. All of it sits inside the middle 3:4 the profile grids show."""
         c = self.cfg.get('cover') or {}
         path = c.get('photo', self.cfg.get('hook_photo'))
@@ -909,11 +909,6 @@ class Hybrid(Modern):
             gain = min(10.0, gain + 2.5 * (LOUDNESS - got))     # ~0.3 dB louder per dB of drive here
         print(f'mix: {got:.1f} LUFS (target {LOUDNESS})')
         return path
-
-    def render(self, out):
-        super().render(out)
-        if self.cfg.get('cover', {}) is not False:        # "cover": false = no cover image
-            self.make_cover(os.path.splitext(out)[0] + '_cover.png')
 
     def frame(self, n):
         t = n / FPS
