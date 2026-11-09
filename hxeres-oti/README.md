@@ -122,5 +122,5 @@ pill λεζάντες, swipe, χωρίς μπάρα προόδου) μαζί μ�
   - Το παλιό end card, με κείμενο στη θέση του pop-up, μένει για τα configs που έχουν `"end": {"lines": [...]}`.
 
 ```
-python3 make_hybrid.py configs/apollon_legia_hybrid.json ../videos/TEST_hybrid_apollon_legia.mp4
+python3 make_hybrid.py configs/apollon_legia_hybrid.json ../videos/hxeres_oti_apollon_legia_hybrid.mp4
 ```

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """'Ήξερες ότι;' — HYBRID theme (test): the modern layout with the elements of the current style.
 
-    python3 make_hybrid.py configs/apollon_legia_hybrid.json ../videos/TEST_hybrid_apollon_legia.mp4
+    python3 make_hybrid.py configs/apollon_legia_hybrid.json ../videos/hxeres_oti_apollon_legia_hybrid.mp4
     python3 make_hybrid.py configs/apollon_legia_hybrid.json --preview 1,4,8 preview.png
 
 From the modern test (make_modern.py): big photos with slow push-ins, clean Inter Display text with masked reveals,
