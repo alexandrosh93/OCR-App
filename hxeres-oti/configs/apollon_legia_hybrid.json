@@ -323,5 +323,14 @@
       "size": 330
     },
     "sticker_y": 335
-  }
+  },
+  "tts_engine": "elevenlabs",
+  "elevenlabs_voice": "ph7fdc8fp13C4spMbl27",
+  "elevenlabs_model": "eleven_v4",
+  "elevenlabs_settings": {
+    "stability": 0.53,
+    "similarity_boost": 0.74
+  },
+  "line_gap": 0.1,
+  "loudness": -11.5
 }

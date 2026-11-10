@@ -366,8 +366,13 @@ class Story:
             t = l['text']
             return t.rstrip()[:-1] + '?' if l.get('question', is_question(t)) and t.rstrip()[-1:] in ';\u037e' else t
         engine = cfg.get('tts_engine')                # null = TTS_ENGINE (azure); "edge" = the old endpoint
-        raw = [tts_words(tts_text(l), l.get('voice', voice), l.get('rate', rate), l.get('pitch', pitch), fx, engine)
-               for l in lines]
+        if engine == 'elevenlabs':                    # one take of the whole script (eleven_tts.py)
+            import eleven_tts
+            raw = eleven_tts.one_take([l['text'] for l in lines], cfg['elevenlabs_voice'],
+                                      cfg.get('elevenlabs_model', 'eleven_v4'), cfg.get('elevenlabs_settings'), SR)
+        else:
+            raw = [tts_words(tts_text(l), l.get('voice', voice), l.get('rate', rate), l.get('pitch', pitch), fx, engine)
+                   for l in lines]
         # questions get a real rising end (TTS reads them almost flat); "question": false turns it off
         qs = cfg.get('question_semitones', 6.0)
         def ask(a, w, l):
@@ -408,7 +413,7 @@ class Story:
         t = self.t_intro + 0.3
         for i in range(1, len(self.vo) - 1):
             starts.append(t)
-            t += d[i] + 0.4
+            t += d[i] + self.cfg.get('line_gap', 0.4)
         t += self.cfg.get('hold', 0.6)
         self.t_end = t - 0.3
         starts.append(t)

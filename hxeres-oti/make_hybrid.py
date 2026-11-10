@@ -897,17 +897,18 @@ class Hybrid(Modern):
         with wave.open(raw, 'wb') as w:
             w.setnchannels(1), w.setsampwidth(2), w.setframerate(SR)
             w.writeframes((out * 32767).astype(np.int16).tobytes())
-        gain = LOUDNESS - (lufs(raw) + 3.01)               # the mono mix plays on both channels: +3 dB
+        target = self.cfg.get('loudness', LOUDNESS)       # e.g. a natural (cloned) voice: a little less pushed
+        gain = target - (lufs(raw) + 3.01)                 # the mono mix plays on both channels: +3 dB
         for _ in range(6):                                # the limiter takes part of the gain back: push and redo
             subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', raw, '-af',
                             f'volume={gain:.2f}dB,alimiter=limit={PEAK}:attack=3:release=60:level=false:latency=true,'
                             'pan=stereo|c0=c0|c1=c0',             # same signal on both sides (-ac 2 would drop 3 dB)
                             '-ar', str(SR), '-c:a', 'pcm_s16le', path], check=True)
             got = lufs(path)
-            if abs(got - LOUDNESS) < 0.3:
+            if abs(got - target) < 0.3:
                 break
-            gain = min(10.0, gain + 2.5 * (LOUDNESS - got))     # ~0.3 dB louder per dB of drive here
-        print(f'mix: {got:.1f} LUFS (target {LOUDNESS})')
+            gain = min(10.0, gain + 2.5 * (target - got))       # ~0.3 dB louder per dB of drive here
+        print(f'mix: {got:.1f} LUFS (target {target}), gain {gain:+.1f} dB into the limiter')
         return path
 
     def frame(self, n):

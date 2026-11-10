@@ -13,6 +13,15 @@
 - **Ρυθμίσεις φωνής:** `el-GR-NestorasNeural` από το Azure AI Speech, που είναι το default engine
   (`azure_tts.py`). Χρησιμοποίησε `"rate": "+10%"`, `"pitch": "+0Hz"`, `"voice_fx": false` και
   `"max_pause": null`, ώστε οι παύσεις να μένουν φυσικές.
+- **Φωνή «Alex H» (ElevenLabs, η κλωνοποιημένη φωνή του χρήστη):**
+  - Ρύθμιση στο config: `"tts_engine": "elevenlabs"`, `"elevenlabs_voice": "ph7fdc8fp13C4spMbl27"`,
+    `"elevenlabs_model": "eleven_v4"`, `"elevenlabs_settings": {"stability": 0.53, "similarity_boost": 0.74}`,
+    `"line_gap": 0.1`, `"loudness": -11.5`.
+  - Όλο το κείμενο πηγαίνει σε μία λήψη (`eleven_tts.py`) και κοστίζει περίπου 1 credit ανά χαρακτήρα. Η λήψη
+    μένει στο cache, οπότε ένα νέο render με το ίδιο κείμενο δεν κοστίζει τίποτα.
+  - Την ένταση την κρατάμε στα −11,5 LUFS, γιατί πιο δυνατά ο limiter αλλοιώνει τη φυσική φωνή.
+  - Την έχει το Απόλλων–Λέγκια (`videos/hxeres_oti_apollon_legia_alexh.mp4`). Μην την κάνεις προεπιλογή χωρίς να
+    ρωτήσεις τον χρήστη.
 - **Ένταση φωνής:** Ο χρήστης θέλει τη φωνή αρκετά δυνατή. Το template 3 βγάζει το mix στα −9,5 LUFS, με τη φωνή
   μπροστά και τα ηχητικά εφέ χαμηλά. Μην το χαμηλώσεις.
 - **Ύφος:** κείμενο φυσικό, σαν TikToker, όχι σαν δελτίο ειδήσεων.
