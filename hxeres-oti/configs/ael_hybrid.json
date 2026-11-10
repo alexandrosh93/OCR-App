@@ -1,0 +1,301 @@
+{
+  "theme": "hybrid",
+  "photo": "posts/ael_pitch.jpg",
+  "team": {
+    "name": "ΑΕΛ",
+    "color": [
+      230,
+      175,
+      0
+    ],
+    "crest": "assets/ael_crest.png",
+    "mascot": "assets/ael_mascot.png"
+  },
+  "caption_case": "as_is",
+  "tail": 0.6,
+  "hook": {
+    "text": "Η ΑΕΛ περίμενε σαράντα τέσσερα ολόκληρα χρόνια για ένα πρωτάθλημα!"
+  },
+  "hook_photo": "posts/ael_toss.jpg",
+  "hook_focus": [
+    0.5,
+    0.32
+  ],
+  "hook_accent": [
+    "σαράντα",
+    "τέσσερα",
+    "πρωτάθλημα"
+  ],
+  "lines": [
+    "Πάμε πίσω, στις πέντε Μαΐου του δύο χιλιάδες δώδεκα, στο Τσίρειο.",
+    "Η ΑΕΛ νίκησε ένα μηδέν την Ανόρθωση, με γκολ του Μπεμπέ, και στέφθηκε πρωταθλήτρια!",
+    "Ήταν ο πρώτος της τίτλος μετά από σαράντα τέσσερα χρόνια, από το χίλια εννιακόσια εξήντα οκτώ!",
+    "Οι οπαδοί της πλημμύρισαν το γήπεδο, για να γιορτάσουν!",
+    "Και ήταν το έκτο πρωτάθλημα της ιστορίας της!"
+  ],
+  "cta": "Γράψε στα σχόλια την επόμενη ιστορική στιγμή που θες να δούμε, και κάνε φόλοου στο Κουπονάκι για περισσότερα!",
+  "emoji": {
+    "τσίρειο": "📍",
+    "μπεμπέ": "⚽",
+    "πρωταθλήτρια": "🏆",
+    "χρόνια": "😳",
+    "γιορτάσουν": "🎉",
+    "ιστορίας": "🔥"
+  },
+  "caption_replace": {
+    "σαράντα τέσσερα": "44",
+    "πέντε Μαΐου": "5 Μαΐου",
+    "δύο χιλιάδες δώδεκα": "2012",
+    "ένα μηδέν": "1-0",
+    "χίλια εννιακόσια εξήντα οκτώ": "1968",
+    "φόλοου": "follow",
+    "Κουπονάκι": "Kouponaki"
+  },
+  "scenes": [
+    {
+      "type": "date",
+      "backdrop": "posts/ael_stands.jpg",
+      "label": "ΛΕΜΕΣΟΣ · ΤΟ ΜΕΓΑΛΟ ΜΑΤΣ",
+      "day": "5",
+      "month": "Μαΐου",
+      "year": "2012",
+      "day_at": {
+        "word": "πέντε"
+      },
+      "month_at": {
+        "word": "μαΐου"
+      },
+      "year_at": {
+        "word": "δύο"
+      },
+      "year_end": {
+        "word": "δώδεκα",
+        "edge": "end"
+      },
+      "photo_card": "posts/ael_stands.jpg",
+      "photo_at": {
+        "word": "τσίρειο"
+      },
+      "photo_x": 790,
+      "photo_y": 830,
+      "photo_rot": 6,
+      "photo_width": 340
+    },
+    {
+      "type": "score",
+      "photo": "posts/ael_party.jpg",
+      "focus": [
+        0.5,
+        0.42
+      ],
+      "home": "ΑΕΛ",
+      "home_color": [
+        230,
+        175,
+        0
+      ],
+      "away": "ΑΝΟΡΘΩΣΗ",
+      "away_color": [
+        24,
+        84,
+        196
+      ],
+      "away_crest": null,
+      "home_at": {
+        "word": "αελ"
+      },
+      "away_at": {
+        "word": "ανόρθωση"
+      },
+      "score_at": {
+        "word": "νίκησε",
+        "offset": -0.1
+      },
+      "timeline_at": {
+        "word": "νίκησε"
+      },
+      "goal": {
+        "minute": 73,
+        "label": "73'",
+        "at": {
+          "word": "μπεμπέ"
+        }
+      },
+      "steps": [
+        {
+          "value": [
+            0,
+            0
+          ],
+          "at": {
+            "word": "νίκησε"
+          },
+          "label": "ΤΣΙΡΕΙΟ"
+        },
+        {
+          "value": [
+            1,
+            0
+          ],
+          "at": {
+            "word": "ένα"
+          },
+          "label": "ΤΕΛΙΚΟ"
+        }
+      ],
+      "badge": {
+        "text": "ΓΚΟΛ ΜΠΕΜΠΕ 73'",
+        "at": {
+          "word": "μπεμπέ"
+        },
+        "x": 765,
+        "y": 560,
+        "rotate": 9
+      }
+    },
+    {
+      "type": "date",
+      "backdrop": "posts/ael_dance.jpg",
+      "label": "Ο ΠΡΩΤΟΣ ΤΙΤΛΟΣ ΜΕΤΑ ΑΠΟ",
+      "day": "44",
+      "month": "χρόνια αναμονής",
+      "year": "1968",
+      "day_at": {
+        "word": "σαράντα"
+      },
+      "month_at": {
+        "word": "χρόνια"
+      },
+      "year_at": {
+        "word": "χίλια"
+      },
+      "year_end": {
+        "word": "οκτώ",
+        "edge": "end"
+      },
+      "photo_card": "posts/ael_dance.jpg",
+      "photo_at": {
+        "word": "τίτλος"
+      },
+      "photo_x": 790,
+      "photo_y": 830,
+      "photo_rot": -5,
+      "photo_width": 340
+    },
+    {
+      "type": "gallery",
+      "label": {
+        "text": "ΤΣΙΡΕΙΟ · 05.05.2012",
+        "at": {
+          "word": "οπαδοί"
+        }
+      },
+      "photos": [
+        {
+          "photo": "posts/ael_fans.jpg",
+          "at": 0.0,
+          "focus": [
+            0.5,
+            0.5
+          ]
+        },
+        {
+          "photo": "posts/ael_fans2.jpg",
+          "at": {
+            "word": "πλημμύρισαν"
+          },
+          "focus": [
+            0.45,
+            0.4
+          ]
+        },
+        {
+          "photo": "posts/ael_net.jpg",
+          "at": {
+            "word": "γήπεδο"
+          },
+          "focus": [
+            0.55,
+            0.45
+          ]
+        }
+      ],
+      "stickers": [
+        {
+          "text": "ΑΠΟΘΕΩΣΗ!",
+          "at": {
+            "word": "γιορτάσουν"
+          },
+          "x": 515,
+          "y": 1150,
+          "rotate": -4,
+          "max_size": 140
+        }
+      ],
+      "emoji_sticker": {
+        "emoji": "🎉",
+        "at": {
+          "word": "γιορτάσουν"
+        },
+        "x": 880,
+        "y": 1040,
+        "size": 130,
+        "rot": 12
+      }
+    },
+    {
+      "type": "fact",
+      "photo": "posts/ael_pitch.jpg",
+      "captions": false,
+      "words_style": "chunky",
+      "crest_y": 590,
+      "y": 770,
+      "words": [
+        {
+          "text": "ΤΟ ΕΚΤΟ",
+          "color": "white",
+          "max_size": 200,
+          "at": {
+            "word": "έκτο"
+          }
+        },
+        {
+          "text": "ΠΡΩΤΑΘΛΗΜΑ",
+          "color": "yellow",
+          "max_size": 190,
+          "at": {
+            "word": "πρωτάθλημα"
+          }
+        },
+        {
+          "text": "ΤΗΣ ΙΣΤΟΡΙΑΣ ΤΗΣ",
+          "color": "white",
+          "max_size": 92,
+          "at": {
+            "word": "ιστορίας"
+          }
+        }
+      ],
+      "mascot_at": {
+        "word": "ήταν"
+      },
+      "confetti_at": {
+        "word": "ιστορίας"
+      },
+      "stamp": {
+        "text": "ΙΣΤΟΡΙΚΟ!",
+        "at": {
+          "word": "της",
+          "nth": 1,
+          "edge": "end"
+        },
+        "x": 800,
+        "y": 640,
+        "rotate": 12
+      }
+    }
+  ],
+  "end": {
+    "photo": "posts/ael_party.jpg"
+  }
+}

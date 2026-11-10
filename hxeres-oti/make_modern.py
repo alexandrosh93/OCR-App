@@ -183,6 +183,8 @@ class Photo:
 class Modern(Story):
     def __init__(self, cfg_path):
         self.cfg = cfg = json.load(open(cfg_path, encoding='utf-8'))
+        for k, v in getattr(self, 'CFG_DEFAULTS', {}).items():   # template defaults (template 3: the voice)
+            cfg.setdefault(k, v)
         self.load_voice()
         self.team = cfg['team']
         self.tcol = tuple(self.team['color'])
