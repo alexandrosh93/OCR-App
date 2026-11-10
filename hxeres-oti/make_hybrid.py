@@ -105,6 +105,13 @@ class PopPhoto(Photo):
 
 
 class Hybrid(Modern):
+    # the voice of every «Ήξερες ότι;»: the user's own ElevenLabs voice «Alex H», in one take (eleven_tts.py);
+    # if ElevenLabs fails, the video comes out with Azure's Nestoras (voice / rate below)
+    CFG_DEFAULTS = {'tts_engine': 'elevenlabs', 'elevenlabs_voice': 'ph7fdc8fp13C4spMbl27',
+                    'elevenlabs_model': 'eleven_v4', 'elevenlabs_settings': {'stability': 0.53, 'similarity_boost': 0.74},
+                    'line_gap': 0.1, 'loudness': -11.5,
+                    'voice': 'el-GR-NestorasNeural', 'rate': '+10%', 'pitch': '+0Hz', 'voice_fx': False, 'max_pause': None}
+
     def __init__(self, cfg_path):
         self.intro = Intro()
         rnd = random.Random(7)

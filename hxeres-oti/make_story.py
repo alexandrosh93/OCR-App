@@ -338,6 +338,8 @@ def sfx_confetti(dur=1.6):
 class Story:
     def __init__(self, cfg_path):
         self.cfg = cfg = json.load(open(cfg_path, encoding='utf-8'))
+        for k, v in self.CFG_DEFAULTS.items():        # template defaults (e.g. the voice of template 3)
+            cfg.setdefault(k, v)
         self.load_voice()
         self.intro = Intro()
         self.team = cfg['team']
@@ -366,11 +368,16 @@ class Story:
             t = l['text']
             return t.rstrip()[:-1] + '?' if l.get('question', is_question(t)) and t.rstrip()[-1:] in ';\u037e' else t
         engine = cfg.get('tts_engine')                # null = TTS_ENGINE (azure); "edge" = the old endpoint
+        raw = None
         if engine == 'elevenlabs':                    # one take of the whole script (eleven_tts.py)
             import eleven_tts
-            raw = eleven_tts.one_take([l['text'] for l in lines], cfg['elevenlabs_voice'],
-                                      cfg.get('elevenlabs_model', 'eleven_v4'), cfg.get('elevenlabs_settings'), SR)
-        else:
+            try:
+                raw = eleven_tts.one_take([l['text'] for l in lines], cfg['elevenlabs_voice'],
+                                          cfg.get('elevenlabs_model', 'eleven_v4'), cfg.get('elevenlabs_settings'), SR)
+            except Exception as e:                    # e.g. credits used up: the video still comes out, with Azure
+                print(f'WARNING: ElevenLabs failed ({str(e)[:160]}), falling back to Azure ({voice})', file=sys.stderr)
+                engine = None
+        if raw is None:
             raw = [tts_words(tts_text(l), l.get('voice', voice), l.get('rate', rate), l.get('pitch', pitch), fx, engine)
                    for l in lines]
         # questions get a real rising end (TTS reads them almost flat); "question": false turns it off
@@ -404,6 +411,7 @@ class Story:
                            ph=rnd.uniform(0, 6.28)) for _ in range(60)]
 
     # ---------------------------------------------------------------- timing
+    CFG_DEFAULTS = {}
     HOOK_START, INTRO_MIN = 0.6, T_INTRO      # voice start and minimum intro length (the sticker intro needs 2.6 s)
 
     def timeline(self):

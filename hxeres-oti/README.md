@@ -68,9 +68,11 @@ emoji & stickers που σκάνε, τρανταγμοί και ηχητικά �
 python3 make_tiktok.py configs/anorthosis_edit.json ../videos/anorthosis_edit.mp4
 ```
 
-### Φωνή «Alex H» (ElevenLabs)
+### Φωνή «Alex H» (ElevenLabs): η προεπιλογή του template 3
 
-`"tts_engine": "elevenlabs"` και `"elevenlabs_voice"` στο config. Όλο το κείμενο πηγαίνει σε **μία λήψη**
+Η κλωνοποιημένη φωνή του χρήστη είναι η προεπιλογή του `make_hybrid.py` (`Hybrid.CFG_DEFAULTS`), οπότε δεν
+χρειάζεται να μπει στο config. Αν αποτύχει το ElevenLabs, το βίντεο βγαίνει με τον Νέστορα του Azure. Για να
+χρησιμοποιηθεί ο Νέστορας εξαρχής: `"tts_engine": "azure"`. Όλο το κείμενο πηγαίνει σε **μία λήψη**
 (`eleven_tts.py`), όπως όταν το επικολλάς στο site. Οι χρόνοι των λέξεων έρχονται έτοιμοι από το ElevenLabs και
 η λήψη κόβεται σε μία φράση ανά σκηνή. Το κόστος είναι περίπου 1 credit ανά χαρακτήρα και η λήψη μένει στο cache.
 Ρυθμίσεις: `elevenlabs_model`, `elevenlabs_settings`, `line_gap` (κενό ανάμεσα στις φράσεις), `loudness` (LUFS).
