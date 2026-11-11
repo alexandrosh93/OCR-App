@@ -1,0 +1,224 @@
+{
+  "theme": "hybrid",
+  "photo": "posts/omonoia_fans_today.jpg",
+  "team": {
+    "name": "ΟΜΟΝΟΙΑ",
+    "color": [
+      0,
+      140,
+      70
+    ],
+    "crest": "assets/omonoia_crest.png",
+    "mascot": "assets/omonoia_mascot.png"
+  },
+  "caption_case": "as_is",
+  "tail": 0.6,
+  "hook": {
+    "text": "Η Ομόνοια πήρε έξι πρωταθλήματα στη σειρά!"
+  },
+  "hook_photo": "posts/omonoia_celebration.jpg",
+  "hook_focus": [
+    0.5,
+    0.3
+  ],
+  "hook_replace": {
+    "έξι": "6"
+  },
+  "hook_accent": [
+    "6",
+    "σειρά"
+  ],
+  "lines": [
+    "Από τη σεζόν εβδομήντα τρία, εβδομήντα τέσσερα, μέχρι και το εβδομήντα οκτώ, εβδομήντα εννιά, κανείς δεν μπορούσε να τη σταματήσει!",
+    "Έξι πρωταθλήματα, το ένα μετά το άλλο! Απόλυτη κυριαρχία!",
+    "Και ο Σωτήρης Καϊάφας, πήρε το Χρυσό Παπούτσι της Ευρώπης, με τριάντα εννιά γκολ σε μία σεζόν!",
+    "Και το ρεκόρ των έξι σερί έμεινε αξεπέραστο για σαράντα ολόκληρα χρόνια!"
+  ],
+  "cta": "Γράψε στα σχόλια την επόμενη ιστορική στιγμή που θες να δούμε, και κάνε φόλοου στο Κουπονάκι για περισσότερα!",
+  "emoji": {
+    "σταματήσει": "🔥",
+    "κυριαρχία": "👑",
+    "παπούτσι": "👟",
+    "γκολ": "⚽",
+    "χρόνια": "🤯"
+  },
+  "caption_replace": {
+    "εβδομήντα τρία εβδομήντα τέσσερα": "1973-74",
+    "εβδομήντα οκτώ εβδομήντα εννιά": "1978-79",
+    "τριάντα εννιά": "39",
+    "έξι": "6",
+    "σαράντα": "40",
+    "φόλοου": "follow",
+    "Κουπονάκι": "Kouponaki"
+  },
+  "scenes": [
+    {
+      "type": "streak",
+      "photo": "posts/omonoia_ajax1979.jpg",
+      "focus": [
+        0.5,
+        0.4
+      ],
+      "ph": 840,
+      "seasons": [
+        "1973–74",
+        "1974–75",
+        "1975–76",
+        "1976–77",
+        "1977–78",
+        "1978–79"
+      ],
+      "start_at": {
+        "word": "εβδομήντα"
+      },
+      "end_at": {
+        "word": "εννιά"
+      },
+      "stamp": {
+        "text": "ΑΣΤΑΜΑΤΗΤΗ!",
+        "at": {
+          "word": "σταματήσει"
+        },
+        "x": 836,
+        "y": 548,
+        "max_w": 360,
+        "max_size": 96,
+        "rotate": 10
+      }
+    },
+    {
+      "type": "gallery",
+      "label": {
+        "text": "ΟΜΟΝΟΙΑ · 1974–1979",
+        "at": 0.0
+      },
+      "photos": [
+        {
+          "photo": "posts/omonoia_fans70s.jpg",
+          "at": 0.0,
+          "focus": [
+            0.5,
+            0.45
+          ]
+        },
+        {
+          "photo": "posts/omonoia_fans_today.jpg",
+          "at": {
+            "word": "κυριαρχία"
+          },
+          "focus": [
+            0.45,
+            0.5
+          ]
+        }
+      ],
+      "stickers": [
+        {
+          "text": "6 ΣΤΗ ΣΕΙΡΑ!",
+          "at": {
+            "word": "άλλο"
+          },
+          "x": 515,
+          "y": 1150,
+          "rotate": -4,
+          "max_size": 140
+        }
+      ],
+      "emoji_sticker": {
+        "emoji": "👑",
+        "at": {
+          "word": "κυριαρχία"
+        },
+        "x": 880,
+        "y": 1040,
+        "size": 140,
+        "rot": 12
+      }
+    },
+    {
+      "type": "stats",
+      "photo": "posts/omonoia_celebration.jpg",
+      "focus": [
+        0.5,
+        0.3
+      ],
+      "ph": 980,
+      "pill": "ΧΡΥΣΟ ΠΑΠΟΥΤΣΙ ΕΥΡΩΠΗΣ 1976",
+      "pill_at": {
+        "word": "χρυσό"
+      },
+      "items": [
+        {
+          "value": 39,
+          "label": "ΓΚΟΛ",
+          "color": "lime",
+          "hero": true,
+          "at": {
+            "word": "τριάντα"
+          }
+        },
+        {
+          "value": 1,
+          "label": "ΣΕΖΟΝ",
+          "color": "yellow",
+          "at": {
+            "word": "μία"
+          }
+        }
+      ]
+    },
+    {
+      "type": "fact",
+      "photo": "posts/omonoia_fans_today.jpg",
+      "captions": false,
+      "words_style": "chunky",
+      "crest_y": 590,
+      "y": 770,
+      "words": [
+        {
+          "text": "ΤΟ ΡΕΚΟΡ ΤΩΝ 6 ΣΕΡΙ",
+          "color": "white",
+          "max_size": 92,
+          "at": {
+            "word": "ρεκόρ"
+          }
+        },
+        {
+          "text": "ΑΞΕΠΕΡΑΣΤΟ",
+          "color": "green",
+          "max_size": 190,
+          "at": {
+            "word": "αξεπέραστο"
+          }
+        },
+        {
+          "text": "40 ΧΡΟΝΙΑ",
+          "color": "white",
+          "max_size": 200,
+          "at": {
+            "word": "σαράντα"
+          }
+        }
+      ],
+      "mascot_at": {
+        "word": "ρεκόρ"
+      },
+      "confetti_at": {
+        "word": "χρόνια"
+      },
+      "stamp": {
+        "text": "ΘΡΥΛΙΚΟ!",
+        "at": {
+          "word": "χρόνια",
+          "edge": "end"
+        },
+        "x": 800,
+        "y": 640,
+        "rotate": 12
+      }
+    }
+  ],
+  "end": {
+    "photo": "posts/omonoia_fans_today.jpg"
+  }
+}
