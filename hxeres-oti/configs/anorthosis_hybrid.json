@@ -16,10 +16,10 @@
   "hook": {
     "text": "Μια κυπριακή ομάδα πέταξε έξω τον Ολυμπιακό Πειραιώς από το Τσάμπιονς Λιγκ!"
   },
-  "hook_photo": "posts/anorthosis_photo.jpg",
+  "hook_photo": "posts/anorthosis_2008_hero.jpg",
   "hook_focus": [
     0.5,
-    0.4
+    0.35
   ],
   "hook_replace": {
     "Τσάμπιονς": "Champions",
@@ -82,10 +82,10 @@
     },
     {
       "type": "score",
-      "photo": "posts/anorthosis_photo.jpg",
+      "photo": "posts/anorthosis_2008_pile.jpg",
       "focus": [
-        0.55,
-        0.4
+        0.4,
+        0.5
       ],
       "timeline": false,
       "home": "ΑΝΟΡΘΩΣΗ",
@@ -207,6 +207,6 @@
     }
   ],
   "end": {
-    "photo": "posts/anorthosis_photo.jpg"
+    "photo": "posts/anorthosis_2008_hero.jpg"
   }
 }
