@@ -1,0 +1,212 @@
+{
+  "theme": "hybrid",
+  "photo": "posts/anorthosis_photo.jpg",
+  "team": {
+    "name": "ΑΝΟΡΘΩΣΗ",
+    "color": [
+      24,
+      84,
+      196
+    ],
+    "crest": "assets/anorthosis_crest.png",
+    "mascot": "assets/anorthosis_mascot.png"
+  },
+  "caption_case": "as_is",
+  "tail": 0.6,
+  "hook": {
+    "text": "Μια κυπριακή ομάδα πέταξε έξω τον Ολυμπιακό Πειραιώς από το Τσάμπιονς Λιγκ!"
+  },
+  "hook_photo": "posts/anorthosis_photo.jpg",
+  "hook_focus": [
+    0.5,
+    0.4
+  ],
+  "hook_replace": {
+    "Τσάμπιονς": "Champions",
+    "Λιγκ": "League"
+  },
+  "hook_accent": [
+    "Ολυμπιακό",
+    "Πειραιώς",
+    "Champions",
+    "League"
+  ],
+  "lines": [
+    "Πάμε πίσω, στις είκοσι εφτά Αυγούστου του δύο χιλιάδες οκτώ.",
+    "Η Ανόρθωση είχε κερδίσει τρία μηδέν στο πρώτο ματς, και με συνολικό σκορ τρία ένα, πήρε την πρόκριση!",
+    "Και έγινε η πρώτη κυπριακή ομάδα που μπήκε ποτέ στους ομίλους του Τσάμπιονς Λιγκ!"
+  ],
+  "cta": "Γράψε στα σχόλια την επόμενη ιστορική στιγμή που θες να δούμε, και κάνε φόλοου στο Κουπονάκι για περισσότερα!",
+  "emoji": {
+    "πρόκριση": "🔥",
+    "λιγκ": "🏆"
+  },
+  "caption_replace": {
+    "είκοσι εφτά": "27",
+    "δύο χιλιάδες οκτώ": "2008",
+    "τρία μηδέν": "3-0",
+    "τρία ένα": "3-1",
+    "Τσάμπιονς Λιγκ": "Champions League",
+    "φόλοου": "follow",
+    "Κουπονάκι": "Kouponaki"
+  },
+  "scenes": [
+    {
+      "type": "date",
+      "backdrop": "posts/anorthosis_photo.jpg",
+      "label": "CHAMPIONS LEAGUE · 2008/09",
+      "day": "27",
+      "month": "Αυγούστου",
+      "year": "2008",
+      "day_at": {
+        "word": "είκοσι"
+      },
+      "month_at": {
+        "word": "αυγούστου"
+      },
+      "year_at": {
+        "word": "δύο"
+      },
+      "year_end": {
+        "word": "οκτώ",
+        "edge": "end"
+      },
+      "photo_card": "posts/anorthosis_photo.jpg",
+      "photo_at": {
+        "word": "πάμε"
+      },
+      "photo_x": 790,
+      "photo_y": 830,
+      "photo_rot": 6,
+      "photo_width": 340
+    },
+    {
+      "type": "score",
+      "photo": "posts/anorthosis_photo.jpg",
+      "focus": [
+        0.55,
+        0.4
+      ],
+      "timeline": false,
+      "home": "ΑΝΟΡΘΩΣΗ",
+      "home_color": [
+        24,
+        84,
+        196
+      ],
+      "away": "ΟΛΥΜΠΙΑΚΟΣ\nΠΕΙΡΑΙΩΣ",
+      "away_color": [
+        196,
+        22,
+        44
+      ],
+      "away_crest": null,
+      "home_at": {
+        "word": "ανόρθωση"
+      },
+      "away_at": {
+        "word": "ανόρθωση",
+        "offset": 0.4
+      },
+      "score_at": {
+        "word": "κερδίσει",
+        "offset": -0.15
+      },
+      "steps": [
+        {
+          "value": [
+            3,
+            0
+          ],
+          "at": {
+            "word": "κερδίσει"
+          },
+          "label": "1ο ΜΑΤΣ"
+        },
+        {
+          "value": [
+            3,
+            1
+          ],
+          "at": {
+            "word": "ένα"
+          },
+          "label": "ΣΥΝΟΛΙΚΟ ΣΚΟΡ",
+          "label_at": {
+            "word": "συνολικό"
+          }
+        }
+      ],
+      "badge": {
+        "text": "ΠΡΟΚΡΙΣΗ!",
+        "at": {
+          "word": "πρόκριση"
+        },
+        "x": 765,
+        "y": 560,
+        "rotate": 9
+      }
+    },
+    {
+      "type": "fact",
+      "photo": "posts/anorthosis_photo.jpg",
+      "captions": false,
+      "words_style": "chunky",
+      "crest_y": 590,
+      "y": 770,
+      "words": [
+        {
+          "text": "ΠΡΩΤΗ",
+          "color": "white",
+          "max_size": 210,
+          "at": {
+            "word": "πρώτη"
+          }
+        },
+        {
+          "text": "ΚΥΠΡΙΑΚΗ ΟΜΑΔΑ",
+          "color": "yellow",
+          "max_size": 150,
+          "at": {
+            "word": "κυπριακή"
+          }
+        },
+        {
+          "text": "ΣΤΟΥΣ ΟΜΙΛΟΥΣ",
+          "color": "green",
+          "max_size": 150,
+          "at": {
+            "word": "στους"
+          }
+        },
+        {
+          "text": "ΤΟΥ CHAMPIONS LEAGUE",
+          "color": "white",
+          "max_size": 80,
+          "at": {
+            "word": "τσάμπιονς"
+          }
+        }
+      ],
+      "mascot_at": {
+        "word": "έγινε"
+      },
+      "confetti_at": {
+        "word": "ομίλους"
+      },
+      "stamp": {
+        "text": "ΙΣΤΟΡΙΚΟ!",
+        "at": {
+          "word": "λιγκ",
+          "edge": "end"
+        },
+        "x": 800,
+        "y": 640,
+        "rotate": 12
+      }
+    }
+  ],
+  "end": {
+    "photo": "posts/anorthosis_photo.jpg"
+  }
+}

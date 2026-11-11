@@ -316,7 +316,7 @@ class Hybrid(Modern):
     def m_score(self, sc, line, T):
         T1 = self.seg_end(line)
         P = self.photo_of(sc['photo'], sc.get('ph', 1000), tuple(sc.get('focus', (0.5, 0.45))), sc.get('popout'))
-        tl_draw = self.make_timeline(sc, line)
+        tl_draw = self.make_timeline(sc, line) if sc.get('timeline', True) else (lambda fr, t: None)   # "timeline": false = no 0'-90' bar
 
         def crest_of(key, default):
             path = sc.get(key, default)
